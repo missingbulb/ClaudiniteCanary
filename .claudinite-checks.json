@@ -1,0 +1,35 @@
+{
+  "packs": [
+    "basics",
+    {
+      "id": "barriers",
+      "via": [
+        "basics"
+      ]
+    },
+    {
+      "id": "git-github",
+      "via": [
+        "basics"
+      ]
+    },
+    "grow_with_claudinite",
+    "tidy-repo",
+    "local/canary"
+  ],
+  "taskScheduler": {
+    "dailyHour": 4,
+    "weeklyDay": "Sun",
+    "monthlyDay": 1
+  },
+  "maintenance": {
+    "delivery": "auto-merge"
+  },
+  "claudinite": {
+    "updated": "2026-07-31T19:07:38.876Z",
+    "ref": "a76c355fe771c058f5d725995cf51337f597a2c8"
+  },
+  "badges": {
+    "readme": "auto"
+  }
+}
