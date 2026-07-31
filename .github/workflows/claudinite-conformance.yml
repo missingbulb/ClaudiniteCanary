@@ -1,0 +1,51 @@
+# The Claudinite world sweep, on every pull request.
+#
+# Deliberately UNFILTERED — no `paths:` key. This repo is the canon's live
+# canary: almost every change to it lands under `.claudinite/**`, which is
+# exactly what a product-tree path filter would exclude. A filtered conformance
+# workflow here would start no check at all on the changes that matter most.
+#
+# Two things depend on this workflow existing:
+#
+#   1. The maintenance PRs. `maintenance.delivery` is `auto-merge`, and GitHub's
+#      auto-merge is a queue for CHECKS — with no check configured the arm
+#      succeeds and the PR then waits forever. A canary whose nightly refresh
+#      cannot land stops tracking the canon and stops being a canary.
+#   2. The consumer-safety gate itself. The canon's canary-rehearsal converges
+#      this repo against a candidate ref; the world sweep is the assertion that
+#      answers whether a real member still works.
+#
+# `workflow_dispatch` is not decoration: a branch pushed and a PR opened by the
+# Actions GITHUB_TOKEN emit no `pull_request` event (GitHub's recursion guard),
+# so baselining starts this workflow explicitly on its maintenance branch.
+# Without the dispatch trigger it cannot, and the PR is back to having no checks.
+#
+# The WORK scope is deliberately absent: it judges a session's own change against
+# that session's transcript and runs at the Stop hook, not in CI.
+name: Claudinite conformance
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  conformance:
+    name: Claudinite world sweep
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      # The engine's always-vendored Node CLI, invoked as the standalone command
+      # — never as a test file a language runner discovers.
+      - name: Claudinite world scope
+        run: node .claudinite/shared/engine/checks/check_the_world.mjs
