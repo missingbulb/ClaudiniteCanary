@@ -1,0 +1,205 @@
+{
+  "version": 1,
+  "foldedThrough": "2026-08-01",
+  "runsFoldedThrough": "2026-08-02T03:48:51Z",
+  "days": {
+    "2026-07-31": {
+      "captures": 0,
+      "merges": 0,
+      "sessions": 0,
+      "userMessages": 0,
+      "userCommands": 0,
+      "skillLoads": {},
+      "checks": {},
+      "checkFindings": {},
+      "tasks": {
+        "basics/baselining": {
+          "agent": 0,
+          "preprocess": 0,
+          "skipped": 0,
+          "failed": 1,
+          "deferred": 0
+        },
+        "grow_with_claudinite/conversation-extract": {
+          "agent": 1,
+          "preprocess": 0,
+          "skipped": 0,
+          "failed": 0,
+          "deferred": 0
+        },
+        "grow_with_claudinite/growth-extract": {
+          "agent": 1,
+          "preprocess": 0,
+          "skipped": 0,
+          "failed": 0,
+          "deferred": 0
+        },
+        "grow_with_claudinite/prose-to-checks-sweep": {
+          "agent": 1,
+          "preprocess": 0,
+          "skipped": 0,
+          "failed": 0,
+          "deferred": 0
+        },
+        "grow_with_claudinite/usage-fold": {
+          "agent": 0,
+          "preprocess": 0,
+          "skipped": 0,
+          "failed": 1,
+          "deferred": 0
+        },
+        "tidy-repo/tidy-issues": {
+          "agent": 0,
+          "preprocess": 0,
+          "skipped": 1,
+          "failed": 0,
+          "deferred": 0
+        }
+      }
+    },
+    "2026-08-01": {
+      "captures": 0,
+      "merges": 0,
+      "sessions": 0,
+      "userMessages": 0,
+      "userCommands": 0,
+      "skillLoads": {},
+      "checks": {},
+      "checkFindings": {},
+      "tasks": {
+        "basics/baselining": {
+          "agent": 0,
+          "preprocess": 0,
+          "skipped": 0,
+          "failed": 1,
+          "deferred": 0
+        },
+        "grow_with_claudinite/conversation-extract": {
+          "agent": 0,
+          "preprocess": 0,
+          "skipped": 0,
+          "failed": 0,
+          "deferred": 1
+        },
+        "grow_with_claudinite/growth-extract": {
+          "agent": 0,
+          "preprocess": 0,
+          "skipped": 0,
+          "failed": 0,
+          "deferred": 1
+        },
+        "grow_with_claudinite/prose-to-checks-sweep": {
+          "agent": 0,
+          "preprocess": 0,
+          "skipped": 0,
+          "failed": 0,
+          "deferred": 1
+        },
+        "grow_with_claudinite/usage-fold": {
+          "agent": 0,
+          "preprocess": 0,
+          "skipped": 0,
+          "failed": 1,
+          "deferred": 0
+        },
+        "tidy-repo/tidy-issues": {
+          "agent": 0,
+          "preprocess": 0,
+          "skipped": 1,
+          "failed": 0,
+          "deferred": 0
+        }
+      }
+    },
+    "2026-08-02": {
+      "captures": 0,
+      "merges": 0,
+      "sessions": 0,
+      "userMessages": 0,
+      "userCommands": 0,
+      "skillLoads": {},
+      "checks": {},
+      "checkFindings": {},
+      "tasks": {
+        "basics/baselining": {
+          "agent": 0,
+          "preprocess": 0,
+          "skipped": 0,
+          "failed": 1,
+          "deferred": 0
+        },
+        "grow_with_claudinite/conversation-extract": {
+          "agent": 0,
+          "preprocess": 0,
+          "skipped": 1,
+          "failed": 0,
+          "deferred": 0
+        },
+        "grow_with_claudinite/growth-extract": {
+          "agent": 0,
+          "preprocess": 0,
+          "skipped": 1,
+          "failed": 0,
+          "deferred": 0
+        }
+      }
+    }
+  },
+  "weeks": {
+    "2026-W31": {
+      "days": 2,
+      "captures": 0,
+      "merges": 0,
+      "sessionDays": 0,
+      "userMessages": 0,
+      "userCommands": 0,
+      "skillLoads": {},
+      "checks": {},
+      "checkFindings": {},
+      "tasks": {
+        "basics/baselining": {
+          "agent": 0,
+          "preprocess": 0,
+          "skipped": 0,
+          "failed": 2,
+          "deferred": 0
+        },
+        "grow_with_claudinite/conversation-extract": {
+          "agent": 1,
+          "preprocess": 0,
+          "skipped": 0,
+          "failed": 0,
+          "deferred": 1
+        },
+        "grow_with_claudinite/growth-extract": {
+          "agent": 1,
+          "preprocess": 0,
+          "skipped": 0,
+          "failed": 0,
+          "deferred": 1
+        },
+        "grow_with_claudinite/prose-to-checks-sweep": {
+          "agent": 1,
+          "preprocess": 0,
+          "skipped": 0,
+          "failed": 0,
+          "deferred": 1
+        },
+        "grow_with_claudinite/usage-fold": {
+          "agent": 0,
+          "preprocess": 0,
+          "skipped": 0,
+          "failed": 2,
+          "deferred": 0
+        },
+        "tidy-repo/tidy-issues": {
+          "agent": 0,
+          "preprocess": 0,
+          "skipped": 2,
+          "failed": 0,
+          "deferred": 0
+        }
+      }
+    }
+  }
+}
