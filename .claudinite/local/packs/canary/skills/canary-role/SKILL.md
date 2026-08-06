@@ -27,8 +27,7 @@ Anything that makes this a member is load-bearing:
   that names what is vendored;
 - the `.claude/settings.json` hook registrations;
 - the vendored scheduler workflow, with the repo-hashed cron minute;
-- the unfiltered conformance workflow — without it the maintenance PRs have no check to gate on,
-  and with `maintenance.delivery: auto-merge` they queue forever behind a check that never runs;
+- the unfiltered conformance workflow;
 - **the `local/canary` pack** — the highest-value shape here. Canon #555 broke the fleet through
   exactly this surface: a local pack's manifest, its rules in both scopes, its bundled skills.
 
