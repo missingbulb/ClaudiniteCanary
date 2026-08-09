@@ -19,8 +19,6 @@ answerable.
 - **The canary's own rules stay trivial.** They prove the pack loaded; they do not enforce anything
   about this repo. A rule with real opinions would turn the canary red for reasons unrelated to the
   canon ref under test, which destroys the only signal this repo produces.
-- **Never hand-edit `.claudinite/shared/`.** It is vendored. Re-vendor from the canon instead —
-  a hand-edit is silently reverted by the next converge and takes the rehearsal's meaning with it.
 - **Divergence from `main` is expected and disposable.** A rehearsal may leave this repo converged
   against a candidate ref. Re-baselining it to canon `main` is always the right repair; there is no
   local state here worth preserving.
