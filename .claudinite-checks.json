@@ -29,7 +29,8 @@
     "monthlyDay": 1
   },
   "maintenance": {
-    "delivery": "auto-merge"
+    "delivery": "auto-merge",
+    "mechanism": "updates"
   },
   "claudinite": {
     "updated": "2026-08-05T00:00:00.000Z",
