@@ -1,5 +1,7 @@
 import mountPresent from './mount-present.mjs';
 import packIntact from './pack-intact.mjs';
+import realismArtifacts from './realism-artifacts.mjs';
+import packShape from './pack-shape.mjs';
 
 // The `canary` pack: this repo's own LOCAL Claudinite pack
 // (.claudinite/local/packs/ — tracked project content, discovered and run by the
@@ -35,7 +37,7 @@ export default {
   detect: null,
   marker: null,
   prose: 'RULES.md',
-  worldRules: [mountPresent],
+  worldRules: [mountPresent, realismArtifacts, packShape],
   workRules: [packIntact],
   skills: ['canary-role'],
 };
