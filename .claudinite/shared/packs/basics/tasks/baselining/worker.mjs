@@ -22,7 +22,7 @@
 //      tasks' declared required_secrets, settings hooks, retired-import removal),
 //      and ask the owner for any declared secret the repo hasn't configured;
 //   4. apply the MECHANICAL migration notes (aliases/materialize/rewrite/declarePacks)
-//      via the cloned migrations/apply.mjs — idempotent — and re-converge the mount
+//      via the cloned engine/migrations/apply.mjs — idempotent — and re-converge the mount
 //      when that changed the DECLARATION, since a newly declared pack's content was
 //      not in the set the vendor pass computed a moment earlier;
 //   5. detect pending AGENTIC notes (registry.mjs `agenticMigrations`, gated on
@@ -70,6 +70,8 @@ import {
   resolveDelivery, pullCreateError, landDelivery,
   pullDisposition, mergeReason, failureSummary, deleteBranch,
 } from '../../../../engine/scheduler/land-pr.mjs';
+// The skew guard, from the engine so BOTH mechanisms read one definition (#768).
+import { servedBy } from '../../../../engine/served-by.mjs';
 
 const CANON_URL = 'https://github.com/missingbulb/Claudinite.git'; // public — no token
 const MAINT_PREFIX = 'claudinite/maintenance';
@@ -488,6 +490,26 @@ export async function main() {
     console.log('baselining: no vendored-mount stamp — nothing to self-refresh (canon home or pre-adoption)');
     return; // quiet, no agent (matches the precondition self-skip)
   }
+  // A repo the update flows serve is not this mechanism's to converge (#768's skew
+  // risk). Stepping aside is the FIRST thing after reading the declaration and
+  // before any clone or write: two mechanisms converging one mount would race on
+  // the same files, and the loser's write reads as drift the winner then repairs,
+  // nightly, forever. Quiet and agentless — a repo served elsewhere is not an
+  // anomaly, so there is nothing here for a human to look at.
+  //
+  // A member's copy of this worker is only as new as its last converge, so a repo
+  // flipped before its mount carries this check keeps baselining for one more
+  // cycle. That is the safe direction of that lag: it converges twice by the old
+  // mechanism rather than falling between the two.
+  const served = servedBy(priorRaw);
+  if (served.mechanism !== 'baselining') {
+    console.log(`baselining: this repo is served by the ${served.mechanism} flow — standing down`);
+    return;
+  }
+  if (served.invalid !== undefined) {
+    console.log(`baselining: maintenance.mechanism "${served.invalid}" is not a mechanism — proceeding as ${served.mechanism}`);
+  }
+
   const { delivery, materialize } = resolveDelivery(priorRaw?.maintenance?.delivery);
   if (!delivery) {
     console.error(`baselining: maintenance.delivery "${priorRaw?.maintenance?.delivery}" is neither auto-merge nor review`);
@@ -519,7 +541,7 @@ export async function main() {
   // 2-4. Deterministic converge: mount + stamp, then wiring, then mechanical notes.
   node([join(tmp, 'vendoring/apply-vendor-set.mjs'), '--target', root, '--ref', headSha]);
   const wiringOut = node([join(tmp, 'engine/scheduler/converge-wiring.mjs'), repo], { CLAUDINITE_REPO_ROOT: root });
-  // The handshake (migrations/registry.mjs, WITHHOLD_CAPABLE_ENV): THIS worker withholds
+  // The handshake (engine/migrations/registry.mjs, WITHHOLD_CAPABLE_ENV): THIS worker withholds
   // workflow paths from its commit and hands them to the agent, so a record may safely
   // materialize one. An older vendored worker does not set it and the materialization is
   // skipped instead of wedging its push. Set here, by the code that does the withholding,
@@ -527,7 +549,7 @@ export async function main() {
   // it: apply-vendor-set above has already overwritten this very file with the new
   // version while this old-or-new code is the thing actually executing.
   const declarationBefore = readFileSync(checksPath, 'utf8');
-  node([join(tmp, 'migrations/apply.mjs')], { CLAUDE_PROJECT_DIR: root, CLAUDINITE_CAN_WITHHOLD_WORKFLOWS: '1' });
+  node([join(tmp, 'engine/migrations/apply.mjs')], { CLAUDE_PROJECT_DIR: root, CLAUDINITE_CAN_WITHHOLD_WORKFLOWS: '1' });
   // A note may have DECLARED a pack (the seed shape). The mount above was computed
   // from the declaration as it stood a moment ago, so the new pack's content is not
   // in it — and a declared pack whose code is absent is a BLOCKING config error until
@@ -552,7 +574,7 @@ export async function main() {
   }
 
   // 5. Pending agentic notes (from the fresh canon clone) + stamp hold.
-  const { loadMigrations, agenticMigrations } = await import(pathToFileURL(join(tmp, 'migrations/registry.mjs')).href);
+  const { loadMigrations, agenticMigrations } = await import(pathToFileURL(join(tmp, 'engine/migrations/registry.mjs')).href);
   const pending = pendingAgentic(agenticMigrations(await loadMigrations()), priorStamp.updated);
   if (pending.length) {
     const raw = JSON.parse(readFileSync(checksPath, 'utf8'));
