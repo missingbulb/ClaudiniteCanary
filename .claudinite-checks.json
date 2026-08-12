@@ -15,7 +15,13 @@
     },
     "grow_with_claudinite",
     "tidy-repo",
-    "local/canary"
+    "local/canary",
+    {
+      "id": "claude-code-web-users-support",
+      "config": {
+        "repo": "missingbulb/Sheepdog"
+      }
+    }
   ],
   "taskScheduler": {
     "dailyHour": 4,
@@ -27,6 +33,6 @@
   },
   "claudinite": {
     "updated": "2026-08-05T00:00:00.000Z",
-    "ref": "7bf58aa03f3ea4684aa6777cb7c837293f08cd46"
+    "ref": "103620f670ff80ac11b130971c5082d339db9909"
   }
 }
