@@ -35,7 +35,7 @@
   "claudinite": {
     "updated": "2026-08-05T00:00:00.000Z",
     "ref": "e3e0a91922f8a08cfac91caff17f26c47ec00ade",
-    "engineVersion": 2,
+    "engineVersion": 3,
     "packVersions": {
       "basics": 1,
       "barriers": 1,
