@@ -12,6 +12,7 @@ import catalogCompleteness from './catalog-completeness.mjs';
 import claudiniteIsolation from './claudinite-isolation.mjs';
 import schedulerWorkflowShape from './scheduler-workflow-shape.mjs';
 import taskDeclarationShape from './task-declaration-shape.mjs';
+import taskDeclarationMatchesFolder from './task-declaration-matches-folder.mjs';
 import taskPhaseDiscipline from './task-phase-discipline.mjs';
 import conformanceWorkflow from './conformance-workflow.mjs';
 import rulesLineLength from './rules-line-length.mjs';
@@ -23,7 +24,14 @@ import rulesLineLength from './rules-line-length.mjs';
 // authoritative — dropping it is a deliberate choice).
 export default {
   id: 'basics',
-  version: 1,
+  // 2 — the mechanism rename (migrations/2026-08-13-mechanism-versioned). The FIRST
+  // bump this pack has taken, and the invariant it establishes: a record's declared
+  // `version` must be ≤ this number, and this number must MOVE for that record to
+  // reach a member already at the previous one. `migrationApplies` is `want > have`
+  // against the stamped version, and what gets stamped is this manifest's number — so
+  // a record declaring a version above it would re-apply every cycle, forever,
+  // draining never.
+  version: 2,
   minEngineVersion: 1,
   ruleRoutingGuidance: {
     belongs: 'cross-project working discipline, issue-branch-PR lifecycle, repo hygiene, doc/reference integrity and the baseline engineering, testing and debugging skills',
@@ -55,10 +63,11 @@ export default {
     // The per-project scheduling conformance guards (scheduled-tasks.md):
     // scheduling is baseline Claudinite discipline — the scheduler workflow and
     // the task-declaration contract are guarded wherever basics is declared
-    // (everywhere). Both rules are relevance-first: inert until the repo carries
+    // (everywhere). All three are relevance-first: inert until the repo carries
     // the workflow / a tasks/<name>/task.mjs of its own.
     schedulerWorkflowShape,
     taskDeclarationShape,
+    taskDeclarationMatchesFolder,
     // The precondition-is-the-only-gate discipline (owner, 2026-08-06): an
     // advisory hunt for tasks that "escape" — skip their work in the prework or
     // agentic phase after the precondition already said run.
