@@ -30,14 +30,14 @@
   },
   "maintenance": {
     "delivery": "auto-merge",
-    "mechanism": "updates"
+    "mechanism": "versioned"
   },
   "claudinite": {
     "updated": "2026-08-05T00:00:00.000Z",
     "ref": "e3e0a91922f8a08cfac91caff17f26c47ec00ade",
     "engineVersion": 3,
     "packVersions": {
-      "basics": 1,
+      "basics": 2,
       "barriers": 1,
       "git-github": 1,
       "grow_with_claudinite": 1,
