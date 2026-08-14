@@ -44,7 +44,7 @@
       "grow_with_claudinite": 1,
       "tidy-repo": 1,
       "claude-code-web-users-support": 1,
-      "canary-probe": 1
+      "canary-probe": 2
     }
   }
 }
