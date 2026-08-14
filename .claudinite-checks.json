@@ -21,7 +21,8 @@
       "config": {
         "repo": "missingbulb/Sheepdog"
       }
-    }
+    },
+    "canary-probe"
   ],
   "taskScheduler": {
     "dailyHour": 4,
@@ -42,7 +43,8 @@
       "git-github": 1,
       "grow_with_claudinite": 1,
       "tidy-repo": 1,
-      "claude-code-web-users-support": 1
+      "claude-code-web-users-support": 1,
+      "canary-probe": 1
     }
   }
 }
