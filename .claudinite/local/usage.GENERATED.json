@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "foldedThrough": "2026-08-15",
-  "runsFoldedThrough": "2026-08-16T04:47:00Z",
+  "foldedThrough": "2026-08-16",
+  "runsFoldedThrough": "2026-08-17T03:59:24Z",
   "days": {
     "2026-08-06": {
       "captures": 3,
@@ -765,29 +765,30 @@
       }
     },
     "2026-08-16": {
-      "captures": 1,
-      "merges": 1,
-      "sessions": 1,
+      "captures": 5,
+      "merges": 5,
+      "sessions": 5,
       "userMessages": 0,
       "userCommands": 0,
       "skillLoads": {
-        "canary-role": 1
+        "canary-role": 5,
+        "growth-dedup": 1
       },
       "checks": {
         "work": {
-          "runs": 4,
-          "failures": 1,
+          "runs": 5,
+          "failures": 2,
           "errors": 0,
-          "blocking": 2,
+          "blocking": 3,
           "advisory": 0,
           "ciRuns": 0,
           "ciFailures": 0
         },
         "world": {
-          "runs": 1,
-          "failures": 0,
+          "runs": 6,
+          "failures": 1,
           "errors": 0,
-          "blocking": 0,
+          "blocking": 1,
           "advisory": 0,
           "ciRuns": 0,
           "ciFailures": 0
@@ -795,7 +796,7 @@
       },
       "checkFindings": {
         "comment-classification": {
-          "blocking": 1,
+          "blocking": 2,
           "advisory": 0
         },
         "task-lifecycle": {
@@ -813,7 +814,19 @@
         }
       },
       "taskExec": {
+        "<pack>/<task>": {
+          "success": 1,
+          "failed": 0,
+          "task-gone": 0,
+          "invalid": 0
+        },
         "core/update": {
+          "success": 1,
+          "failed": 0,
+          "task-gone": 0,
+          "invalid": 0
+        },
+        "grow_with_claudinite/prose-to-checks-sweep": {
           "success": 1,
           "failed": 0,
           "task-gone": 0,
@@ -973,31 +986,32 @@
       }
     },
     "2026-W33": {
-      "days": 6,
-      "captures": 7,
-      "merges": 7,
-      "sessionDays": 7,
+      "days": 7,
+      "captures": 12,
+      "merges": 12,
+      "sessionDays": 12,
       "userMessages": 0,
       "userCommands": 0,
       "skillLoads": {
         "adopt-pack": 2,
-        "canary-role": 2
+        "canary-role": 7,
+        "growth-dedup": 1
       },
       "checks": {
         "work": {
-          "runs": 14,
-          "failures": 6,
+          "runs": 19,
+          "failures": 8,
           "errors": 0,
-          "blocking": 8,
+          "blocking": 11,
           "advisory": 0,
           "ciRuns": 0,
           "ciFailures": 0
         },
         "world": {
-          "runs": 10,
-          "failures": 0,
+          "runs": 16,
+          "failures": 1,
           "errors": 0,
-          "blocking": 0,
+          "blocking": 1,
           "advisory": 0,
           "ciRuns": 0,
           "ciFailures": 0
@@ -1005,11 +1019,11 @@
       },
       "checkFindings": {
         "comment-classification": {
-          "blocking": 5,
+          "blocking": 7,
           "advisory": 0
         },
         "task-lifecycle": {
-          "blocking": 3,
+          "blocking": 4,
           "advisory": 0
         }
       },
@@ -1036,7 +1050,7 @@
           "deferred": 0
         },
         "core/update": {
-          "agent": 0,
+          "agent": 1,
           "prework": 2,
           "skipped": 0,
           "failed": 0,
@@ -1072,8 +1086,20 @@
         }
       },
       "taskExec": {
+        "<pack>/<task>": {
+          "success": 1,
+          "failed": 0,
+          "task-gone": 0,
+          "invalid": 0
+        },
         "basics/update": {
           "success": 5,
+          "failed": 0,
+          "task-gone": 0,
+          "invalid": 0
+        },
+        "core/update": {
+          "success": 1,
           "failed": 0,
           "task-gone": 0,
           "invalid": 0
@@ -1087,6 +1113,12 @@
         "grow_with_claudinite/growth-extract": {
           "success": 1,
           "failed": 2,
+          "task-gone": 0,
+          "invalid": 0
+        },
+        "grow_with_claudinite/prose-to-checks-sweep": {
+          "success": 1,
+          "failed": 0,
           "task-gone": 0,
           "invalid": 0
         }
