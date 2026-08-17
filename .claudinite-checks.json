@@ -19,7 +19,7 @@
     {
       "id": "claude-code-web-users-support",
       "config": {
-        "repo": "missingbulb/Sheepdog"
+        "repo": "missingbulb/Shepherd"
       }
     },
     "canary-probe",
