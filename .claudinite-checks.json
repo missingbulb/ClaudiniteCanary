@@ -45,14 +45,14 @@
     "ref": "e3e0a91922f8a08cfac91caff17f26c47ec00ade",
     "engineVersion": 6,
     "packVersions": {
-      "basics": 7,
+      "basics": 9,
       "barriers": 2,
       "git-github": 4,
-      "claudinite-growth": 7,
+      "claudinite-growth": 10,
       "tidy-repo": 5,
       "claude-code-web-users-support": 2,
       "canary-probe": 2,
-      "claudinite-lifecycle": 9
+      "claudinite-lifecycle": 10
     }
   }
 }
