@@ -23,7 +23,8 @@
       }
     },
     "canary-probe",
-    "claudinite-lifecycle"
+    "claudinite-lifecycle",
+    "github-actions"
   ],
   "taskScheduler": {
     "endpoints": {
@@ -52,7 +53,8 @@
       "tidy-repo": 5,
       "claude-code-web-users-support": 2,
       "canary-probe": 2,
-      "claudinite-lifecycle": 10
+      "claudinite-lifecycle": 10,
+      "github-actions": 5
     }
   }
 }

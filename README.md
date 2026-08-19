@@ -1,7 +1,7 @@
 # ClaudiniteCanary
 
 <!-- claudinite:packs -->
-![basics](.claudinite/shared/packs/basics/badge.svg "basics") ![claudinite-lifecycle](.claudinite/shared/packs/claudinite-lifecycle/badge.svg "claudinite-lifecycle") ![barriers](.claudinite/shared/packs/barriers/badge.svg "barriers") ![git-github](.claudinite/shared/packs/git-github/badge.svg "git-github") ![claudinite-growth](.claudinite/shared/packs/claudinite-growth/badge.svg "claudinite-growth") ![tidy-repo](.claudinite/shared/packs/tidy-repo/badge.svg "tidy-repo") ![claude-code-web-users-support](.claudinite/shared/packs/claude-code-web-users-support/badge.svg "claude-code-web-users-support") ![canary-probe](.claudinite/shared/packs/canary-probe/badge.svg "canary-probe")<!-- /claudinite:packs -->
+![basics](.claudinite/shared/packs/basics/badge.svg "basics") ![claudinite-lifecycle](.claudinite/shared/packs/claudinite-lifecycle/badge.svg "claudinite-lifecycle") ![barriers](.claudinite/shared/packs/barriers/badge.svg "barriers") ![git-github](.claudinite/shared/packs/git-github/badge.svg "git-github") ![claudinite-growth](.claudinite/shared/packs/claudinite-growth/badge.svg "claudinite-growth") ![tidy-repo](.claudinite/shared/packs/tidy-repo/badge.svg "tidy-repo") ![claude-code-web-users-support](.claudinite/shared/packs/claude-code-web-users-support/badge.svg "claude-code-web-users-support") ![canary-probe](.claudinite/shared/packs/canary-probe/badge.svg "canary-probe") ![github-actions](.claudinite/shared/packs/github-actions/badge.svg "github-actions")<!-- /claudinite:packs -->
 
 Testing repo for Claudinite release tests — the **live canary** for Claudinite's consumer-safety
 gate.
