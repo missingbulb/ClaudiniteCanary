@@ -1,4 +1,4 @@
-// canary-probe — the live proof that the canon can deliver a workflow file.
+// claudinite-canary-repo — the live proof that the canon can deliver a workflow file.
 //
 // THE THING IT PROVES. `.github/workflows/` is the one directory the nightly update
 // can never push to: it commits with the Action's `GITHUB_TOKEN`, which GitHub refuses
@@ -44,12 +44,14 @@
 // also means the record's job is to UPDATE a workflow that is already there — the exact
 // shape a fleet-wide workflow fix would take.
 export default {
-  id: 'canary-probe',
-  version: 2,
+  id: 'claudinite-canary-repo',
+  // 4: renamed from `canary-probe` — the pack's subject is a Claudinite feature, so
+  // it carries the prefix that says so.
+  version: 4,
   minEngineVersion: 3,
   ruleRoutingGuidance: {
     belongs: 'the inert probe workflow the canon delivers to its canary to prove workflow materialization works end to end',
-    excludes: 'real CI and release workflows — github-actions owns workflow practice, each release pack owns its own pipeline',
+    excludes: 'real CI and release workflows — git-github owns workflow practice, each release pack owns its own pipeline',
   },
   badge: 'badge.svg',
   detect: null,

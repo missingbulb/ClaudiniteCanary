@@ -22,7 +22,7 @@
         "repo": "missingbulb/Shepherd"
       }
     },
-    "canary-probe",
+    "claudinite-canary-repo",
     "claudinite-lifecycle"
   ],
   "taskScheduler": {
@@ -45,14 +45,14 @@
     "ref": "e3e0a91922f8a08cfac91caff17f26c47ec00ade",
     "engineVersion": 6,
     "packVersions": {
-      "basics": 9,
+      "basics": 12,
       "barriers": 2,
-      "git-github": 4,
-      "claudinite-growth": 10,
-      "tidy-repo": 5,
-      "claude-code-web-users-support": 2,
-      "canary-probe": 2,
-      "claudinite-lifecycle": 10
+      "git-github": 6,
+      "claudinite-growth": 14,
+      "tidy-repo": 6,
+      "claude-code-web-users-support": 3,
+      "claudinite-canary-repo": 4,
+      "claudinite-lifecycle": 14
     }
   }
 }
