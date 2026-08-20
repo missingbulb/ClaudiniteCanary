@@ -43,16 +43,16 @@
   "claudinite": {
     "updated": "2026-08-05T00:00:00.000Z",
     "ref": "e3e0a91922f8a08cfac91caff17f26c47ec00ade",
-    "engineVersion": 6,
+    "engineVersion": "60820.1",
     "packVersions": {
-      "basics": 16,
-      "barriers": 2,
-      "git-github": 8,
-      "claudinite-growth": 16,
-      "tidy-repo": 9,
-      "claude-code-web-users-support": 3,
-      "claudinite-canary-repo": 4,
-      "claudinite-lifecycle": 16
+      "basics": "60820.2",
+      "barriers": "60820.1",
+      "git-github": "60820.1",
+      "claudinite-growth": "60820.1",
+      "tidy-repo": "60820.1",
+      "claude-code-web-users-support": "60820.1",
+      "claudinite-canary-repo": "60820.1",
+      "claudinite-lifecycle": "60820.1"
     }
   }
 }
