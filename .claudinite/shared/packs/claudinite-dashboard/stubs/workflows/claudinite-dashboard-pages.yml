@@ -1,0 +1,131 @@
+# Publish the Claudinite task dashboard to GitHub Pages.
+#
+# SEEDED ONCE, AT ADOPTION, and this repo's from that moment. `.github/workflows/` is
+# the one directory the nightly update cannot push to — the Action's `GITHUB_TOKEN` is
+# refused there — so this file arrives with the adopting session and never converges.
+# That is why it is a thin shim: everything that can be updated lives in the mount, and
+# only what must be frozen is frozen here.
+#
+# The site holds NO repository data. It is a shell that calls the GitHub API from the
+# viewer's own browser with the viewer's own credential, so publishing it discloses
+# nothing a viewer could not already read — someone who cannot see a repo sees nothing
+# of it here. Do not bake API responses into the build; that property is the reason a
+# public Pages site is a safe host for it.
+#
+# Configure it in `.claudinite-checks.json`, on the `claudinite-dashboard` entry's
+# `config` — not here. Every key is optional.
+
+name: Claudinite dashboard
+
+on:
+  push:
+    branches: [main]
+    paths:
+      # The mount is the page's source, so a converge that moves it republishes.
+      - '.claudinite/shared/packs/claudinite-dashboard/**'
+      - '.claudinite/shared/engine/**'
+      - '.claudinite-checks.json'
+      - '.github/workflows/claudinite-dashboard-pages.yml'
+  # The push trigger above cannot see the one push that moves the mount most often.
+  # Claudinite's own update PRs are auto-merged by the Actions token, and a push made
+  # with `GITHUB_TOKEN` deliberately fires no workflow — so every converge lands
+  # silently and the site keeps serving whatever the last human merge built.
+  #
+  # The catch-up hangs off the scheduler rather than a `cron:` of its own, because the
+  # vendored scheduler is this repo's one permitted schedule. Following it is not
+  # competing with it: the cadence stays the scheduler's, and this only asks, each time
+  # it finishes, whether the page's sources have moved since the last deploy.
+  workflow_run:
+    workflows: ['Claudinite scheduler']
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never two deployments at once, and a superseded build is not worth finishing.
+concurrency:
+  group: claudinite-dashboard-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # The scheduler finishes every hour, and on almost all of those the page's
+      # sources are exactly what was deployed last time. A cache entry keyed on those
+      # sources is the cheapest available answer to "has anything moved": a hit means
+      # this same tree is already live, and the run stops here. The entry is written
+      # only once the deploy has succeeded, so a failed one is retried rather than
+      # recorded as done. A `push` or a hand dispatch skips the question — those are
+      # asked for, and a forced republish must not be answered with a cache hit.
+      - name: What the page would be built from
+        id: sources
+        run: echo "key=dashboard-deployed-${{ hashFiles('.claudinite/shared/packs/claudinite-dashboard/**', '.claudinite/shared/engine/**', '.claudinite-checks.json', '**/*.GENERATED.json') }}" >> "$GITHUB_OUTPUT"
+
+      - name: Is that already deployed?
+        id: deployed
+        if: github.event_name == 'workflow_run'
+        uses: actions/cache/restore@v4
+        with:
+          path: .deployed
+          key: ${{ steps.sources.outputs.key }}
+          lookup-only: true
+
+      - uses: actions/setup-node@v5
+        if: steps.deployed.outputs.cache-hit != 'true'
+        with:
+          node-version: 24
+
+      - name: Assemble the site
+        if: steps.deployed.outputs.cache-hit != 'true'
+        run: node .claudinite/shared/packs/claudinite-dashboard/build-site.mjs
+
+      # The build exits clean with no `_site` when the mount does not yet carry the
+      # dashboard — adopted, not yet converged. Uploading nothing would fail the run,
+      # and deploying an empty artifact would replace a working site with a 404.
+      - name: Is there a site to publish?
+        id: built
+        if: steps.deployed.outputs.cache-hit != 'true'
+        run: |
+          if [ -f _site/index.html ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "No _site/index.html — skipping the deploy until the mount carries the dashboard."
+          fi
+
+      - uses: actions/configure-pages@v5
+        if: steps.built.outputs.ready == 'true'
+
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.built.outputs.ready == 'true'
+        with:
+          path: _site
+
+    outputs:
+      ready: ${{ steps.built.outputs.ready }}
+      key: ${{ steps.sources.outputs.key }}
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+      # Now, and only now, is this tree deployed — which is what the next scheduler
+      # wake-up reads to decide it has nothing to do.
+      - run: mkdir -p .deployed && echo "${{ github.sha }}" > .deployed/sha
+      - uses: actions/cache/save@v4
+        with:
+          path: .deployed
+          key: ${{ needs.build.outputs.key }}

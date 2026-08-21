@@ -23,7 +23,8 @@
       }
     },
     "claudinite-canary-repo",
-    "claudinite-lifecycle"
+    "claudinite-lifecycle",
+    "claudinite-dashboard"
   ],
   "taskScheduler": {
     "endpoints": {
@@ -52,7 +53,8 @@
       "tidy-repo": "60820.1",
       "claude-code-web-users-support": "60821.1",
       "claudinite-canary-repo": "60821.1",
-      "claudinite-lifecycle": "60821.2"
+      "claudinite-lifecycle": "60821.2",
+      "claudinite-dashboard": "60821.2"
     }
   }
 }
