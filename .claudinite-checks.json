@@ -24,7 +24,15 @@
     },
     "claudinite-canary-repo",
     "claudinite-lifecycle",
-    "claudinite-dashboard"
+    {
+      "id": "claudinite-dashboard",
+      "answers": {
+        "mode": "repo — this deployment is Canary's own page; it covers no other repo"
+      },
+      "config": {
+        "mode": "repo"
+      }
+    }
   ],
   "taskScheduler": {
     "endpoints": {
