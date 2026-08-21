@@ -24,7 +24,12 @@
     },
     "claudinite-canary-repo",
     "claudinite-lifecycle",
-    "claudinite-dashboard"
+    {
+      "id": "claudinite-dashboard",
+      "config": {
+        "canonRepo": "missingbulb/Claudinite"
+      }
+    }
   ],
   "taskScheduler": {
     "endpoints": {
