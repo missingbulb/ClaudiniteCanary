@@ -42,7 +42,7 @@ export default {
       line: null,
       what: `${ENTRY} is missing — the vendored mount is absent or incomplete`,
       why,
-      fix: 'run the canon\'s vendoring/apply-vendor-set.mjs against this repo to rebuild .claudinite/shared/',
+      fix: 'force this repo\'s own update task (dispatch claudinite-scheduler.yml with wake: "update") and watch it land — never apply-vendor-set.mjs by hand, which silently skips migration records on an already-stamped repo',
       doc,
     }];
   },
