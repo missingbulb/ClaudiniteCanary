@@ -19,16 +19,21 @@ import {
   NEEDS_HUMAN,
 } from './model.mjs';
 import {
-  ciStatus, humanWork, mountState, estimateMinutes, attentionBreakdown, MINUTES_PER_PARK,
+  ciStatus, humanWork, mountState, estimateMinutes, estimateNote, attentionBreakdown,
+  parkMinutes, parkMinutesNote,
 } from './fleet.mjs';
 import { readCanon, priceStampedPacks } from './canon.mjs';
 import { workRows, rowsFor, viewCounts, defaultView, attentionOf, VIEWS } from './work.mjs';
+import { repoCandidates } from './next-work.mjs';
 import { readUsage, growthSeries, queueSeries, hourSeries } from './usage.mjs';
+import { readContributions, liveSourcesNeeded } from './contributions.mjs';
+import { packCard } from './contrib-view.mjs';
 import {
-  $, el, ago, until, stamp, duration, chip, head, emptyRow, issueLink, tiles, segmentBar,
+  $, el, ago, until, stamp, duration, chip, head, emptyRow, issueLink, leadCard, tiles, segmentBar,
   warnNodes, stackedColumns, chartLegend, dualAxisChart, flipRows,
   LEVEL_GLYPH, OUTCOME_COLOR,
 } from './ui.mjs';
+import { settingsTextAtSha, SETTINGS_FILE } from './settings-read.mjs';
 
 // How far each past-data panel looks back. The month is the growth panel's, because a
 // fortnight of a corpus's own numbers is noise; the fortnight is the queue's, because
@@ -81,7 +86,7 @@ function renderTiles({ open, runs, meta, work, mount, ci, now }) {
     // The one figure here that is a quantity of YOUR time rather than a count of the
     // machine's things, and the assumption behind it is published beside it.
     [minutes || '—', 'minutes waiting on you', minutes ? 'var(--critical)' : null,
-      minutes ? `at ${MINUTES_PER_PARK} min a parked item` : 'nothing parked'],
+      estimateNote(attention)],
     [parked.length, 'items parked for a person', parked.length ? 'var(--critical)' : null, needsNodes],
     [work.prs, 'pull requests open', null,
       work.prsOldest ? `oldest ${duration(now - work.prsOldest)}${work.drafts ? ` · ${work.drafts} draft` : ''}` : 'none'],
@@ -398,6 +403,20 @@ function renderGrowth(growth) {
 
 const fmt = (n) => (n === null || n === undefined ? '—' : n.toLocaleString());
 
+// --- what the packs report ---------------------------------------------------------
+
+// LAST on the page, and the only region whose contents differ from repo to repo:
+// everything above it is the scheduler, which every member has. A repo whose declared
+// packs contribute nothing never sees the section at all — the common case, since most
+// packs carry conventions rather than state.
+function renderContributions(contributions, now) {
+  const section = $('pack-metrics');
+  const node = $('pack-cards');
+  if (!contributions.length) { section.hidden = true; node.replaceChildren(); return; }
+  section.hidden = false;
+  node.replaceChildren(...contributions.map((c) => packCard(c, now)));
+}
+
 // --- entry -----------------------------------------------------------------------
 
 export async function loadRepo({ repo, token, config = null, onError }) {
@@ -408,11 +427,11 @@ export async function loadRepo({ repo, token, config = null, onError }) {
   const headCommit = await gh.getHead(repo, meta.default_branch, token);
   const sha = headCommit.sha;
 
-  const configText = await gh.getTextAtSha(repo, sha, '.claudinite-checks.json', token);
-  if (!configText) onError?.(`${repo} has no .claudinite-checks.json — it does not run Claudinite, so there are no declared tasks.`);
+  const configText = await settingsTextAtSha(gh, repo, sha, token);
+  if (!configText) onError?.(`${repo} has no ${SETTINGS_FILE} — it does not run Claudinite, so there are no declared tasks.`);
   let declaration = null;
   try { declaration = configText ? JSON.parse(configText) : null; } catch {
-    onError?.('.claudinite-checks.json is present but is not valid JSON — the roster will be empty.');
+    onError?.(`${SETTINGS_FILE} is present but is not valid JSON — the roster will be empty.`);
   }
   const schedule = declaration?.taskScheduler ?? null;
   if (declaration && !schedule) onError?.('No taskScheduler block — next-anchor times cannot be computed.');
@@ -450,19 +469,41 @@ export async function loadRepo({ repo, token, config = null, onError }) {
   const canon = await readCanon(config, token);
   if (canon) await priceStampedPacks(canon, declaration);
 
+  // What this repo's own packs report. Discovery is free — the declaration and the
+  // tree listing are both already in hand — and every read below is content at a sha,
+  // so a warm load spends nothing on it.
+  const contributions = await readContributions({ repo, sha, token, declaration, paths, gh });
+  const needed = liveSourcesNeeded(contributions);
+  const live = {
+    stars: meta.stars,
+    release: needed.has('latest-release') ? await gh.latestRelease(repo, token).catch(() => undefined) : undefined,
+  };
+  for (const c of contributions) c.live = live;
+
   const all = workRows(rows, open);
   const counts = viewCounts(all);
+
+  // The lead, from the same rows the work table is drawn from — one derivation, so the
+  // block at the top and the first row of the `stuck` view are one verdict.
+  const candidates = repoCandidates(repo, all);
+  const lead = candidates[0] ?? null;
+  $('repo-lead').replaceChildren(leadCard(lead, {
+    rest: candidates.length - 1,
+    minutes: parkMinutes(lead?.park),
+    note: parkMinutesNote(lead?.park),
+  }));
 
   renderTiles({
     open,
     runs,
     meta,
     work: humanWork(issuePage.issues, issuePage.prs, now),
-    mount: declaration ? mountState(declaration.claudinite, canon) : null,
+    mount: declaration ? mountState(declaration, canon) : null,
     ci: ciStatus(runs, meta.default_branch),
     now,
   });
   renderWork(all, repo, now, defaultView(counts));
+  renderContributions(contributions, now);
   // Today's closes come from the issue page already fetched — the fold's own read is
   // watermarked and hourly, so the last hour or two is exactly what it has not seen.
   renderOutcomes(queueSeries(usage, {

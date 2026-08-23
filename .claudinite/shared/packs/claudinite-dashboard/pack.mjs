@@ -21,7 +21,16 @@
 // repo tokens for something no session acts on. Its README carries the explanation
 // instead and `prose` stays null.
 //
-// TWO CHECKS, AND A TASK, ALL THE DIGEST'S. `tasks/fleet-digest/` writes the fleet's
+// PACKS CONTRIBUTE TO THIS PAGE, as data and never as code. A pack ships a descriptor
+// (`packs/<id>/dashboard.json`, found by path convention — nothing registers it) naming
+// what it has to say; its values come either from its own generated file in the
+// member's tree or from one of the two platform facts the page already reads for every
+// member. `descriptor-usable` is the third check: it holds a descriptor to what the
+// page's OWN reader accepts, which the JSON Schema beside it structurally cannot,
+// because the failure is silent — a rejected descriptor renders as one apologetic line
+// in someone else's browser and nothing goes red where the author is looking.
+//
+// TWO MORE CHECKS, AND A TASK, ALL THE DIGEST'S. `tasks/fleet-digest/` writes the fleet's
 // dated morning brief that the fleet page reads (it moved here from the `claudinite-fleet-sheepdog`
 // pack, which enumerated the fleet but never showed anyone the result). Its two checks
 // live in its own folder because nothing else reads them: `digest-plain-text` holds the
@@ -46,34 +55,25 @@
 // the engine's scheduler run. So the assembly logic keeps converging with the canon while the
 // workflow — the part that cannot converge — stays a one-time seed. Only the file that
 // has to be frozen is frozen.
-import datedFixtureCollision from './tasks/fleet-digest/dated-fixture-collision.mjs';
-import digestPlainText from './tasks/fleet-digest/digest-plain-text.mjs';
 import { fleetTokenHandoverStep } from './tasks/fleet-digest/fleet-token.mjs';
 
 export default {
-  id: 'claudinite-dashboard',
-  version: '60821.4',
-  minEngineVersion: 4,
+  version: '60823.1',
+  minEngineVersion: '60822.1',
   ruleRoutingGuidance: {
     belongs: 'the browser dashboard over Claudinite scheduler state, the site that publishes it, and the fleet morning brief it reads',
     excludes: 'how the scheduler behaves — core; workflow practice — git-github; product sites — static-website',
   },
-  badge: 'badge.svg',
 
   // Never fingerprinted. Nothing in a repo's shape implies wanting a dashboard, and a
   // scan that suspected one from the presence of a scheduler would suspect it in every
   // member on the fleet.
-  detect: null,
-  marker: null,
   seededByDefault: false,
 
   // A page, not a practice — see the header.
-  prose: null,
   // Audits the landed briefs and the task's own fixtures as they stand, whatever this
   // session touched: a markdown brief that landed last week is just as unreadable in the
   // owner's inbox as one that landed today.
-  worldRules: [digestPlainText, datedFixtureCollision],
-  workRules: [],
 
   // ONE question, and it is the one thing this pack cannot pick for a repo: which
   // dashboard the deployment is. Everything else has a default that is right for nearly
