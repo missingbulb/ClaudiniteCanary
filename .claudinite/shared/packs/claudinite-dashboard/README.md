@@ -34,7 +34,7 @@ else and either configure the secret or expect the parked item.
 ## Adopting it
 
 ```jsonc
-// .claudinite-checks.json
+// .claudinite-settings.json
 { "packs": ["claudinite-dashboard"] }
 ```
 
@@ -124,11 +124,13 @@ wanted it say so, and nothing else on the page is affected.
 
 | Panel | Answers |
 |---|---|
+| **Start here** | The one piece of work most worth doing in this repo, named with the issue to open and what it costs you — the top row of the same ranking the work table is ordered by |
 | **At a glance** | Minutes waiting on a person and what they are made of, items parked, open pull requests and issues, CI on the default branch, runs in flight, stars, and drift against the canon |
 | **Work** | One row per piece of work, in three views — **stuck** (what has stopped, and for how long), **pending** (what is moving, and what happens next), **all** (what each task is and what it has done). The page opens on the worst view that has anything in it |
 | **What the queue closed** | Per-day outcomes over a fortnight — today from the live issue page, the days before it from the fold |
 | **What ran** | 48 hours of scheduler runs, executor runs and agent sessions per hour; hovering an hour names the tasks that executed in it |
 | **What Claudinite is doing here** | 30 days of rule tokens against checks executed, on two stated scales — plus tokens spent, lines committed and releases where the fold carries them |
+| **What the packs report** | One card per declared pack that contributes — see [below](#what-a-pack-contributes). Last, because it is the only region whose contents differ from repo to repo |
 
 ### One table, not two
 
@@ -174,13 +176,44 @@ second. So nothing on it is a total for its own sake.
 
 | Panel | Answers |
 |---|---|
+| **Start here** | The one piece of work most worth doing across every member, named with the issue to open and what it costs you — the worst thing true of the fleet, and a link rather than a count |
+| **The morning brief** | Yesterday's fleet digest, when the deployment names a `digestsRepo`, with a picker back through earlier days |
 | **What Claudinite did this week** | The work the machinery did that nobody had to do — this week against last, including the check findings caught inside sessions and what the corpus costs each of them |
-| **The last two mornings** | Yesterday's and the day before's fleet digest, when the deployment names a `digestsRepo` |
 | **Fleet activity** | What the fleet *did* per day — work closed by outcome, runs and their pass rate, **how often the checks ran and caught something**, and which members moved at all |
 | **Rollup tiles** | How many *members* need a human — not how many items exist |
 | **Members** | Every member ranked worst-first, in three column groups asked in the order a reader asks them: **Activity** (90 days of commits, as a weekly curve), **Waiting on a person** (an estimate in minutes, what it is made of, then issues and pull requests) and **Claudinite** (packs wearing the mount's verdict, queue, outcomes, scheduler). Stars and CI ride in the member cell — they are how you recognise a row, not findings about it |
 | **Tasks across the fleet** | One task, everywhere it runs — a shared pack's task parked in four members at once is a canon problem no single repo's page reveals |
 | **Pack adoption** | Which packs are in use and how widely — who a change to a pack would reach |
+| **What this deployment's packs report** | The fleet-scope cards, from the packs the deployment repo and the canon declare |
+
+Each member's row is followed by a **subrow** of what its own packs report — see
+[below](#what-a-pack-contributes).
+
+### The lead: what to do, before what happened
+
+Both pages open on the same block, because both were otherwise pages that only
+**report** — and a reader who came without a question in hand is asked by a wall of
+accurate panels to do the ranking themselves. [`next-work.mjs`](next-work.mjs) does the
+ranking and names **one** piece of work: worst first, an issue ahead of a repo-level
+fault at the same severity because only the issue is something to open, and among equals
+the one that has been wrong longest.
+
+The card carries **what it costs you** beside the reason, because "one item is parked" is
+a fact and "fifteen minutes" is a decision about the next fifteen minutes. The figure is
+one term of the same sum the tiles total — the park's own rate, by what it asks of you
+([`PARK_MINUTES`](fleet.mjs)) — so a card and a tile can never price one item
+differently. `next-work.mjs` holds no rates at all: a candidate carries the park's own
+classification and the view prices it. An approval is charged the floor of its rate,
+since no PR's size is read here, and the card says *at least*. Work the estimate does not
+cover — a scheduler fault, a recovery-rule trip — shows **no figure**, never a zero.
+
+It invents no judgement of its own. A candidate is the worst thing another module has
+already decided is wrong — an item's `troubles` (the queue's real recovery rules) or a
+member summary's `reasons` — so the block can never disagree with the row further down
+that says the same thing, and an `info`-level fact (a mount one pack behind) is reported
+below and never prodded about. Mid-sweep the fleet's block says it is still reading:
+"nothing is waiting on you" read off four of forty members is a wrong statement rather
+than a partial one.
 
 ### The roster is enumerated, not stored
 
@@ -209,12 +242,17 @@ shows everyone the whole fleet.
 Three rules shape it, and they are in [`fleet.mjs`](fleet.mjs):
 
 **An estimate is published as an assumption, or not at all.** The Waiting group puts
-a number of minutes on each member, at a flat rate per parked item, and the rate is a
-single exported constant that the page states in its own note. Nothing here measures
-how long a park actually takes; a per-kind estimate would be the same guess wearing
-more decimal places, and the honest form of a number nothing measures is one you can
-argue with. A broken scheduler is deliberately outside it — that is not a queue of
-work to get through — though it is still reported beside it.
+a number of minutes on each member, priced per park kind — the four parks are disjoint
+by remedy, and diagnosing a break is not merging a PR. The rates are exported constants
+and the page states the arithmetic in its own note, so the figure can be argued with
+rather than trusted. An approval is priced by the PR's size, which the page does not
+read: it charges the rate's floor and says so, which makes the total a lower bound
+rather than a guess that might be high.
+
+Two things are deliberately outside it, and both are still reported beside it: a broken
+scheduler, which is not a queue of work to get through, and a recovery-rule trip, which
+wears no label at all — it is derived from an item's age against the engine's leashes,
+and what clears it is the janitor or the next scheduler run rather than a person.
 
 **A count of members is not a description of the morning.** Every attention figure
 counts *members*, because "47 open items" is not a list anyone works through. But a
@@ -272,6 +310,55 @@ comparison:
   produced a work item is not idle, it is unwired. Every per-repo number for it is a
   perfectly healthy zero.
 
+## What a pack contributes
+
+Every panel above is this pack's own. These are what a member's **other** packs have to
+say about it — `git-github` the repo's stars, a release pack its last release, a spec
+pack the requirements that moved. The contract in one line: **a pack contributes data,
+never code** — the page executes nothing a pack ships, because the fleet view renders
+repos the viewer merely has read access to, and importing their modules would run every
+member's code in the viewer's browser with the viewer's token in scope.
+
+A contributing pack ships one file, `packs/<id>/dashboard.json`, validated by
+[the schema beside this one](dashboard-descriptor.schema.json) and found **by that path**
+— nothing registers it, so adding a descriptor is the whole change. It declares the
+pack's widgets once, and the two views select from that list by id:
+
+```jsonc
+{
+  "widgets": [{ "id": "stars", "kind": "stat", "label": "stars", "noun": "stars",
+                "glyph": "★", "source": "repo-stars" }],
+  "repo": ["stars"],
+  "fleet": { "member": "stars" }
+}
+```
+
+Four kinds — `stat` (a fact true now), `event` (the last time something happened),
+`window` (a count, always against the window before it) and `list` (the few most recent
+named things). There is deliberately no shape a growing cumulative total fits.
+
+Values come from one of three **sources**. `generated` reads the pack's own
+`.claudinite/local/dashboard/<pack>.GENERATED.json`, written by that pack's own task;
+`latest-release` and `repo-stars` are platform facts this page already reads for every
+member, so a pack using one ships a descriptor and no code at all.
+
+**On the fleet grid a card is a phrase, not a chip.** The page composes it from the
+parts the pack supplied — `★ 18 stars`, `5d ago · v1.33.102 live`, `12 reqs in last 2w` —
+and sets the quantity, the noun and the connective in three different registers, which
+is the reason the contract takes values rather than a finished string. Every card a
+member has renders in full: there is no `+n`, and nothing whose only content is that
+some pack has something to say. A `list` is the one kind that cannot be a line.
+
+Two things a pack cannot do. It cannot **colour** its own card — colour on that grid is
+the engine's severity edge, and a pack that could paint itself red would be claiming
+attention it did not earn — and it cannot reach the **ranking**: contributions never
+feed attention, member ordering or the rollup tiles.
+
+Costs are the same shape as everything else here: discovery is free (the declaration
+and the tree listing are already in hand), the descriptor and values are content at a
+sha and therefore free on a warm load, and `latest-release` is the one live request,
+withheld before anything the queue depends on.
+
 ## The morning briefs
 
 ### Writing them
@@ -310,6 +397,16 @@ used — a dropped `exclude` list would otherwise widen the brief silently.
 **Quiet is measured on meaningful merges, never on pushes.** Every member's mount is
 converged nightly, so `pushed_at` is fresh on every repo in the fleet every day and
 would report the whole fleet as permanently active.
+
+### Reading them
+
+The brief leads the fleet page, opening on **yesterday** — the newest day that can have
+one, since a day's brief is written after that day — with a picker back through the
+[`MAX_DAYS_BACK`](digest.mjs) days before it. A day is one content-at-a-path read, cached
+by commit like everything else here and never re-asked once shown; the bound exists
+because a day before the series began is indistinguishable from a day the task had
+nothing to say about, and paging into pre-history one empty card at a time is not
+browsing.
 
 To catch the series up after an outage, create the item by hand with a day count:
 
@@ -568,10 +665,15 @@ API's shape, not a decision either pack can drift on.
 
 ## Checks
 
-Both are the digest's — nothing here polices the page, which is a page and not a
-practice.
+Two are the digest's. The third holds another pack's `dashboard.json` to what this
+page's own reader accepts — not a second copy of the schema, which ordinary tooling
+already validates, but the thing a schema cannot check: that the file is usable, and
+that the ids its views select by resolve. The failure is otherwise silent, since a
+rejected descriptor renders as one apologetic line in a viewer's browser and nothing
+goes red where its author is looking.
 
 | Check | Severity | Reason | Enforcement |
 |---|---|---|---|
 | `digest-plain-text` | medium | correctness | check: blocking |
 | `dated-fixture-collision` | medium | correctness | check: blocking |
+| `descriptor-usable` | medium | correctness | check: blocking |

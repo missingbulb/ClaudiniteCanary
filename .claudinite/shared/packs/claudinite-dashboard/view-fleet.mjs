@@ -4,18 +4,24 @@
 import * as gh from './github.mjs';
 import {
   summariseMember, rankMembers, rollUp, packSpread, taskSpread, attentionBreakdown,
-  memberAttention, fleetAttention, estimateMinutes, MINUTES_PER_PARK,
+  memberAttention, fleetAttention, estimateMinutes, estimateNote, parkMinutes, parkMinutesNote,
 } from './fleet.mjs';
 import { readCanon, priceStampedPacks } from './canon.mjs';
 import { activitySeries, fleetBenefits, delta, commitDays } from './activity.mjs';
 import { readUsage } from './usage.mjs';
-import { fleetGrowth } from './fleet-growth.mjs';
-import { digestDates, digestPath, digestEntry } from './digest.mjs';
 import {
-  $, el, ago, duration, groupedHead, columnCount, groupStarts, emptyRow, repoLink, tiles, segmentBar,
-  reasonNodes, stackedColumns, chartLegend, windowFigure, starMark, ciMark, commitGraph, packMark,
+  readContributions, liveSourcesNeeded, readDeploymentContributions, valueOf, fleetPhrase, phraseText,
+} from './contributions.mjs';
+import { miniCard, miniAbsent, packCard, CONTRIB_STATE_TEXT } from './contrib-view.mjs';
+import { fleetGrowth } from './fleet-growth.mjs';
+import { digestDates, digestDate, digestPath, digestEntry, MAX_DAYS_BACK } from './digest.mjs';
+import { fleetCandidates } from './next-work.mjs';
+import {
+  $, el, ago, duration, groupedHead, columnCount, groupStarts, emptyRow, leadCard, repoLink, tiles, segmentBar,
+  reasonNodes, stackedColumns, chartLegend, windowFigure, ciMark, commitGraph, packMark,
   LEVEL_GLYPH, STATE_ORDER, STATE_COLOR, STATE_UI, OUTCOME_COLOR,
 } from './ui.mjs';
+import { settingsTextAtSha } from './settings-read.mjs';
 
 // Members are read concurrently, but not all at once: a dozen members at six calls
 // each is enough parallel load to trip secondary rate limiting, and the page is not
@@ -46,7 +52,7 @@ async function readMember(repo, token, { withTree = true } = {}) {
     // and it arrives in the call the content cache already makes for the sha.
     const head = await gh.getHead(repo, meta.default_branch, token);
     const sha = head.sha;
-    const configText = await gh.getTextAtSha(repo, sha, '.claudinite-checks.json', token);
+    const configText = await settingsTextAtSha(gh, repo, sha, token);
 
     let declaration = null;
     if (configText) {
@@ -76,11 +82,29 @@ async function readMember(repo, token, { withTree = true } = {}) {
       readUsage(repo, sha, token),
     ]);
 
+    // What this member's own packs report. Discovery is a match against the tree
+    // listing already fetched above, so a member whose packs contribute nothing costs
+    // nothing to find that out; the descriptor and values reads are content at a sha
+    // and free on every load after the branch moves.
+    const contributions = await readContributions({ repo, sha, token, declaration, paths: tree?.paths ?? null, gh });
+    const needed = liveSourcesNeeded(contributions);
+    const live = {
+      stars: meta.stars,
+      // The one live read pack contributions add, and only when some declared pack
+      // actually asks for it — a fleet with no release pack never spends it.
+      release: needed.has('latest-release')
+        ? await gh.latestRelease(repo, token).catch(() => undefined)
+        : undefined,
+    };
+    for (const c of contributions) c.live = live;
+
     return {
       repo,
       declaration,
       defaultBranch: meta.default_branch,
       stars: meta.stars,
+      contributions,
+      live,
       archived: meta.archived,
       sha,
       head,
@@ -109,24 +133,37 @@ async function readMember(repo, token, { withTree = true } = {}) {
 // whose digest task is idle does not re-ask every load.
 async function readDigests(config, token) {
   if (!config?.digestsRepo) return null;
+  brief.config = config;
+  brief.token = token;
   const dates = digestDates(Date.now());
   try {
     const meta = await gh.getRepo(config.digestsRepo, token);
-    const sha = await gh.getHeadSha(config.digestsRepo, meta.default_branch, token);
-    return await Promise.all(dates.map(async (date) => {
-      try {
-        const text = await gh.getTextAtSha(config.digestsRepo, sha, digestPath(config.digestsPath, date), token);
-        return digestEntry(date, text);
-      } catch (error) {
-        return digestEntry(date, null, error);
-      }
-    }));
+    brief.sha = await gh.getHeadSha(config.digestsRepo, meta.default_branch, token);
+    const entries = await Promise.all(dates.map((date) => readDay(date)));
+    return entries;
   } catch (error) {
     // The repo itself could not be read — a permissions fact about the viewer, not a
     // statement about any day's brief. Every day reports it rather than reading as
     // "nothing was written".
-    return dates.map((date) => digestEntry(date, null, error));
+    const entries = dates.map((date) => digestEntry(date, null, error));
+    for (const e of entries) brief.days.set(e.date, e);
+    return entries;
   }
+}
+
+// One day's brief, read at most once per load. Content at a path in a commit, so the
+// second viewer of the same day pays nothing and a day already read is not re-asked.
+async function readDay(date) {
+  if (brief.days.has(date)) return brief.days.get(date);
+  let entry;
+  try {
+    const text = await gh.getTextAtSha(brief.config.digestsRepo, brief.sha, digestPath(brief.config.digestsPath, date), brief.token);
+    entry = digestEntry(date, text);
+  } catch (error) {
+    entry = digestEntry(date, null, error);
+  }
+  brief.days.set(date, entry);
+  return entry;
 }
 
 // --- render ---------------------------------------------------------------------
@@ -203,16 +240,54 @@ const CI_UI = {
   unknown: { label: '—', cls: 'info' },
 };
 
-function memberRow(s, onOpen, now) {
+// THE SUBROW: what this member's packs report, one mini-card each, spanning the grid.
+//
+// A row rather than a fourth column group, and that is what makes the rule above it
+// affordable: a column held two cards and forced an overflow marker, where a grid
+// width holds six and every card a member has can simply render. SHOWN OR ABSENT —
+// there is no `+n` here, and no card whose content is that some pack has something to
+// say.
+//
+// A pack with no `fleet.member` in its descriptor contributes to the repo page only
+// and is silent here; a member with nothing to report gets no subrow at all.
+function contribRow(s, now) {
+  const cards = [];
+  for (const c of s.contributions ?? []) {
+    if (c.withheld) { cards.push(miniAbsent('not read', `${c.pack} — the page declined to spend a request`)); continue; }
+    const id = c.descriptor?.member;
+    if (!id) continue;
+    const widget = c.descriptor.widgets.get(id);
+    const title = `${c.pack} · ${widget.label}`;
+    const resolved = valueOf(widget, { values: c.values, live: c.live ?? s.live ?? {} });
+    if (resolved.state !== 'ok') { cards.push(miniAbsent(CONTRIB_STATE_TEXT[resolved.state] ?? 'not read', title)); continue; }
+    const parts = fleetPhrase(widget, resolved.value, now);
+    if (!parts?.length) { cards.push(miniAbsent(CONTRIB_STATE_TEXT.absent, title)); continue; }
+    cards.push(miniCard(parts, { title: `${title} — ${phraseText(parts)}`, glyph: widget.glyph }));
+  }
+  if (!cards.length) return null;
+  // The severity class rides on the subrow too, so the edge runs the height of the
+  // member rather than stopping halfway down it.
+  return el('tr', { className: `contrib lvl-${s.level}` }, [
+    el('td', { className: 'contrib-cell', colSpan: MEMBER_COLS }, [el('div', { className: 'minis' }, cards)]),
+  ]);
+}
+
+// One member, as the rows of its own `<tbody>`: the standard metrics, then the subrow
+// when it has one. They are one member and not two rows — which is what the grouping
+// buys, since a `<tbody>` is what lets both highlight together on hover.
+function memberRows(s, onOpen, now) {
   const open = (e) => { e.preventDefault(); onOpen(s.repo); };
 
-  // Two marks ahead of the name, neither of them a column: stars say what KIND of
-  // repo this is, and CI whether it builds. Both are read as part of identifying the
-  // row rather than as findings, which is why they sit with the name and not in a
-  // question group of their own.
+  // ONE mark ahead of the name now, not two: CI, whether it builds, read as part of
+  // identifying the row rather than as a finding.
+  //
+  // Stars used to sit here, drawn by this file. It is `git-github`'s contribution
+  // instead — a descriptor and no code — and it lands in the subrow below with every
+  // other thing a pack has to say. The cost is deliberate and visible: a member that
+  // does not declare `git-github` has no star count anywhere, because a fact the page
+  // happens to hold is not a reason to render it.
   const ciUi = CI_UI[s.ci?.state] ?? CI_UI.unknown;
   const identity = (kids) => el('td', { className: 'member-cell' }, [el('div', { className: 'member' }, [
-    starMark(s.stars),
     ciMark(ciUi, s.ci?.at ? duration(now - s.ci.at) : 'no run'),
     el('div', {}, [
       el('a', { href: `?repo=${encodeURIComponent(s.repo)}`, className: 'name', textContent: s.repo.split('/')[1] ?? s.repo, onclick: open }),
@@ -223,11 +298,11 @@ function memberRow(s, onOpen, now) {
   const name = identity([]);
 
   if (s.status !== 'adopted') {
-    return el('tr', { className: `lvl-${s.level} muted-row` }, [
+    return [el('tr', { className: `std lvl-${s.level} muted-row` }, [
       name,
       el('td', { colSpan: MEMBER_COLS - 2 }, reasonNodes(s.reasons)),   // the last cell is the open link
       el('td', { className: 'nw' }, [el('a', { href: `?repo=${encodeURIComponent(s.repo)}`, textContent: 'open', onclick: open })]),
-    ]);
+    ])];
   }
 
   // Whatever is left once every reason with a cell of its own is dropped — see
@@ -319,8 +394,23 @@ function memberRow(s, onOpen, now) {
     }),
   ]);
 
-  return el('tr', { className: `lvl-${s.level}` },
-    banded([identified, commit, est, what, issues, prs, packs, queue, outcomes, runs]));
+  return [
+    el('tr', { className: `std lvl-${s.level}` },
+      banded([identified, commit, est, what, issues, prs, packs, queue, outcomes, runs])),
+    contribRow(s, now),
+  ].filter(Boolean);
+}
+
+// The deployment's own cards — the fleet questions no single member's page can
+// answer. Rendered from the packs the deployment repo (and the canon, when one is
+// configured) declares, and absent entirely when neither contributes any.
+function renderDeployment(contributions, now) {
+  const section = $('fleet-contrib');
+  if (!section) return;
+  if (!contributions?.length) { section.hidden = true; return; }
+  section.hidden = false;
+  $('fleet-contrib-cards').replaceChildren(
+    ...contributions.map((c) => packCard(c, now, { ids: c.descriptor.deployment })));
 }
 
 // --- what the machinery bought ---------------------------------------------------
@@ -333,10 +423,13 @@ function memberRow(s, onOpen, now) {
 //   only ever grows is a decoration.
 //
 //   NOTHING INVENTED. No estimated hours saved, no multiplier, no score — only counts
-//   of things that individually happened, from reads the page already made. Two
+//   of things that individually happened, from reads the page already made. Three
 //   quantities the issue asked for are deliberately ABSENT rather than approximated:
-//   checks enforced (a member's check count is not in any read this page makes) and
-//   anything expressed in time saved (nothing measures it).
+//   checks enforced (a member's check count is not in any read this page makes),
+//   anything expressed in time saved (nothing measures it), and members converged in
+//   the window — a member's settings say WHAT it holds, never when it took it, since
+//   #1252 deleted the datetime the tile used to count (which recorded the last full
+//   re-vendor, not the last converge, and so counted the wrong thing anyway).
 function renderBenefits(b, growth) {
   const node = $('fleet-benefits');
   const runsPassed = b.current.runs - b.current.runsFailed;
@@ -357,11 +450,6 @@ function renderBenefits(b, growth) {
     windowFigure(runsPassed, 'scheduler runs passed',
       delta(runsPassed, prevPassed),
       b.current.runsFailed ? `${b.current.runsFailed} failed` : 'none failed'),
-    // No delta: a mount stamp carries ONE date, so last week's figure would count
-    // members whose last converge happens to sit in that window, not members that
-    // converged then. A comparison built on that would read as a fleet slowing down.
-    windowFigure(`${b.converged}/${b.members}`, 'members converged on their own', null,
-      `in the last ${b.windowDays} days`),
     b.digests === null ? null
       : windowFigure(b.digests, 'digests written', null, 'of the last two days'),
     // The two figures this panel used to name as ABSENT: nothing the page read could
@@ -424,11 +512,48 @@ function digestCard(entry, repo, dir) {
   return el('div', { className: 'chart-card digest' }, kids);
 }
 
-function renderDigests(entries, config) {
-  const section = $('fleet-digests-section');
-  if (!entries) { section.hidden = true; return; }
+// The day the picker is on, and the days already read. Module state rather than a
+// parameter because the fleet page repaints on every member's read landing, and a
+// picker whose day reset itself a dozen times during the sweep would be unusable.
+const brief = { config: null, token: null, sha: null, days: new Map(), back: 1 };
+
+function showDay(back) {
+  brief.back = Math.min(MAX_DAYS_BACK, Math.max(1, back));
+  const date = digestDate(Date.now(), brief.back);
+  renderBrief();
+  // Already-read days render from the cache above and never reach this.
+  if (!brief.days.has(date) && brief.sha) readDay(date).then(renderBrief).catch(() => renderBrief());
+}
+
+function renderBrief() {
+  const section = $('lead-digest-section');
+  if (!brief.config?.digestsRepo) { section.hidden = true; return; }
   section.hidden = false;
-  $('fleet-digests').replaceChildren(...entries.map((e) => digestCard(e, config?.digestsRepo, config?.digestsPath)));
+
+  const date = digestDate(Date.now(), brief.back);
+  const entry = brief.days.get(date) ?? null;
+  $('fleet-digest').replaceChildren(entry
+    ? digestCard(entry, brief.config.digestsRepo, brief.config.digestsPath)
+    : el('div', { className: 'chart-card lead-card digest' }, [
+      el('div', { className: 'k', textContent: date }),
+      el('p', { className: 'sub', textContent: 'Reading…' }),
+    ]));
+
+  // Older to the left, newer to the right, and the ends are disabled rather than
+  // hidden: a control that vanishes at a boundary reads as a page that broke.
+  $('digest-nav').replaceChildren(
+    el('button', {
+      type: 'button', textContent: '‹', title: 'the day before',
+      disabled: brief.back >= MAX_DAYS_BACK,
+      onclick: () => showDay(brief.back + 1),
+    }),
+    el('span', { className: 'sub', textContent: brief.back === 1 ? 'yesterday' : `${brief.back} days ago` }),
+    el('button', {
+      type: 'button', textContent: '›', title: 'the day after',
+      disabled: brief.back <= 1,
+      onclick: () => showDay(brief.back - 1),
+    }),
+  );
 }
 
 // --- the activity panel ----------------------------------------------------------
@@ -537,7 +662,6 @@ function renderActivity(series, growth) {
 // most of the time the viewer spends here.
 const pendingRow = (repo) => el('tr', { className: 'pending-row' }, [
   el('td', {}, [el('div', { className: 'member' }, [
-    starMark(null),
     el('div', {}, [
       el('span', { className: 'name', textContent: repo.split('/')[1] ?? repo }),
       el('div', { className: 'sub' }, [repoLink(repo)]),
@@ -546,15 +670,33 @@ const pendingRow = (repo) => el('tr', { className: 'pending-row' }, [
   el('td', { colSpan: MEMBER_COLS - 1 }, [el('span', { className: 'sub', textContent: 'reading…' })]),
 ]);
 
-function renderFleet(summaries, reads, now, onOpen, canon, progress = null, digests = null, canonConfig = null) {
+function renderFleet(summaries, reads, now, onOpen, canon, progress = null, digests = null, deployment = null) {
   const resolved = summaries.filter(Boolean);
   const pending = summaries.map((s, i) => (s ? null : reads.names?.[i])).filter(Boolean);
   const roll = rollUp(resolved);
 
+  // The prod, before every panel that reports. Mid-sweep it says so rather than
+  // claiming a clean fleet: "nothing is waiting on you" read off four of forty members
+  // is a wrong statement, not a partial one.
+  const candidates = fleetCandidates(resolved);
+  const sweeping = progress && progress.done < progress.total;
+  $('fleet-lead').replaceChildren(!candidates.length && sweeping
+    ? el('div', { className: 'chart-card lead-card' }, [
+      el('div', { className: 'lead-why', textContent: 'Reading the fleet…' }),
+      el('div', { className: 'sub', textContent: `${progress.done}/${progress.total} members read — nothing waiting on you in those.` }),
+    ])
+    : leadCard(candidates[0] ?? null, {
+      rest: candidates.length - 1,
+      onRepo: onOpen,
+      minutes: parkMinutes(candidates[0]?.park),
+      note: parkMinutesNote(candidates[0]?.park),
+    }));
+
   // The headline tile counts MEMBERS, which is the length of the morning's list — but
   // the list is only actionable once it says what kind of attention each is waiting
   // for. Three merges to approve and three broken lanes are not the same morning.
-  const needs = attentionBreakdown(fleetAttention(roll));
+  const attention = fleetAttention(roll);
+  const needs = attentionBreakdown(attention);
 
   tiles($('fleet-tiles'), [
     [roll.needAttention, 'members need you', roll.needAttention ? 'var(--critical)' : null,
@@ -568,8 +710,7 @@ function renderFleet(summaries, reads, now, onOpen, canon, progress = null, dige
       roll.neverRan ? `${roll.neverRan} never ran` : ''],
     [roll.behindMembers, 'mounts behind', roll.behindMembers ? 'var(--serious)' : null,
       canon ? (canon.engineVersion != null ? `canon engine v${canon.engineVersion}` : 'canon versions unreadable') : 'no canon configured'],
-    [estimateMinutes(fleetAttention(roll)), 'minutes of your time', null,
-      `at ${MINUTES_PER_PARK} min a parked item`],
+    [estimateMinutes(attention), 'minutes of your time', null, estimateNote(attention)],
     [roll.openItems, 'open work items', null, `${roll.inFlight} run(s) in flight`],
     [`${roll.adopted}/${roll.members}`, 'members adopted', null,
       [roll.notAdopted ? `${roll.notAdopted} not adopted` : '', roll.unreadable ? `${roll.unreadable} unreadable` : ''].filter(Boolean).join(', ')],
@@ -582,16 +723,22 @@ function renderFleet(summaries, reads, now, onOpen, canon, progress = null, dige
     ? `${progress.done}/${progress.total} repos read — figures below cover those`
     : (progress ? `${progress.total} repos read` : '');
 
-  const body = groupedHead($('fleet'), MEMBER_GROUPS);
+  // One `<tbody>` per member — see `memberRows`. The head's own tbody carries the
+  // empty state and the still-reading rows, and is moved to the END once the members
+  // are in, so a repo still being read does not appear above the ones already ranked.
+  const table = $('fleet');
+  const body = groupedHead(table, MEMBER_GROUPS);
   if (!summaries.length) { body.append(emptyRow(MEMBER_COLS, 'No members in the roster.')); return; }
-  for (const s of rankMembers(resolved)) body.append(memberRow(s, onOpen, now));
+  for (const s of rankMembers(resolved)) table.append(el('tbody', { className: 'm' }, memberRows(s, onOpen, now)));
   for (const repo of pending) body.append(pendingRow(repo));
+  table.append(body);
 
   // Tasks across the fleet. This is the view a per-repo page structurally cannot
   // give: a shared pack's task parked in four members at once is a canon problem,
   // and in any single repo it looks like that repo's bad luck.
   const resolvedReads = reads.filter(Boolean);
-  renderDigests(digests, canonConfig);
+  renderBrief();
+  renderDeployment(deployment, now);
   const growth = fleetGrowth(resolvedReads, { now });
   renderBenefits(fleetBenefits(resolvedReads, { now, digests }), growth);
   renderActivity(activitySeries(resolvedReads, { now }), growth);
@@ -641,8 +788,14 @@ export async function loadFleet({ repos, token, config, onOpen, onError, onProgr
   reads.names = repos;
   const summaries = new Array(repos.length).fill(null);
   let done = 0;
-  const paint = () => renderFleet(summaries, reads, now, onOpen, canon, { done, total: repos.length }, digests, config);
+  // The deployment's own cards, read once. Its repos are usually members too, so on a
+  // fleet page this is served out of the same caches the sweep fills.
+  let deployment = null;
+  const paint = () => renderFleet(summaries, reads, now, onOpen, canon, { done, total: repos.length }, digests, deployment);
   paint();
+  readDeploymentContributions({ config, token, gh })
+    .then((d) => { deployment = d; paint(); })
+    .catch(() => { /* a deployment card that cannot be read is a section that stays hidden */ });
 
   await pool(repos, async (repo, i) => {
     const r = await readMember(repo, token);

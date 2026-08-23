@@ -1,31 +1,53 @@
 {
   "packs": [
-    "basics",
+    {
+      "id": "basics",
+      "version": "60823.1"
+    },
     {
       "id": "barriers",
+      "version": "60823.1",
       "via": [
         "basics"
       ]
     },
     {
       "id": "git-github",
+      "version": "60822.2",
       "via": [
         "basics"
       ]
     },
-    "claudinite-growth",
-    "tidy-repo",
+    {
+      "id": "claudinite-growth",
+      "version": "60823.2"
+    },
+    {
+      "id": "tidy-repo",
+      "version": "60823.1"
+    },
     "local/canary",
     {
       "id": "claude-code-web-users-support",
+      "version": "60823.1",
+      "answers": {
+        "store": "missingbulb/Shepherd"
+      },
       "config": {
         "repo": "missingbulb/Shepherd"
       }
     },
-    "claudinite-canary-repo",
-    "claudinite-lifecycle",
+    {
+      "id": "claudinite-canary-repo",
+      "version": "60822.1"
+    },
+    {
+      "id": "claudinite-lifecycle",
+      "version": "60823.1"
+    },
     {
       "id": "claudinite-dashboard",
+      "version": "60823.1",
       "answers": {
         "mode": "repo — this deployment is Canary's own page; it covers no other repo"
       },
@@ -35,7 +57,7 @@
     }
   ],
   "taskScheduler": {
-    "endpoints": {
+    "agenticTaskInvocationEndpoints": {
       "default": {
         "url": "https://api.anthropic.com/v1/claude_code/routines/trig_01BWGhdcKEpPzAuS31Mre8qa/fire",
         "tokenSecret": "CCR_ROUTINE_TOKEN"
@@ -45,24 +67,5 @@
     "weeklyDay": "Sun",
     "monthlyDay": 1
   },
-  "maintenance": {
-    "delivery": "auto-merge",
-    "mechanism": "versioned"
-  },
-  "claudinite": {
-    "updated": "2026-08-05T00:00:00.000Z",
-    "ref": "e3e0a91922f8a08cfac91caff17f26c47ec00ade",
-    "engineVersion": "60820.1",
-    "packVersions": {
-      "basics": "60821.4",
-      "barriers": "60820.1",
-      "git-github": "60821.1",
-      "claudinite-growth": "60821.2",
-      "tidy-repo": "60820.1",
-      "claude-code-web-users-support": "60821.2",
-      "claudinite-canary-repo": "60821.2",
-      "claudinite-lifecycle": "60821.3",
-      "claudinite-dashboard": "60821.4"
-    }
-  }
+  "engineVersion": "60823.1"
 }
