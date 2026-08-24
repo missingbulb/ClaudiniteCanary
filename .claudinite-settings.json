@@ -2,7 +2,7 @@
   "packs": [
     {
       "id": "basics",
-      "version": "60823.1"
+      "version": "60824.1"
     },
     {
       "id": "barriers",
@@ -20,11 +20,11 @@
     },
     {
       "id": "claudinite-growth",
-      "version": "60823.2"
+      "version": "60824.1"
     },
     {
       "id": "tidy-repo",
-      "version": "60823.1"
+      "version": "60824.1"
     },
     "local/canary",
     {
@@ -39,21 +39,25 @@
     },
     {
       "id": "claudinite-canary-repo",
-      "version": "60822.1"
+      "version": "60824.1"
     },
     {
       "id": "claudinite-lifecycle",
-      "version": "60823.1"
+      "version": "60824.3"
     },
     {
       "id": "claudinite-dashboard",
-      "version": "60823.2",
+      "version": "60824.2",
       "answers": {
         "mode": "repo — this deployment is Canary's own page; it covers no other repo"
       },
       "config": {
         "mode": "repo"
       }
+    },
+    {
+      "id": "claudinite-tasks",
+      "version": "60824.3"
     }
   ],
   "taskScheduler": {
