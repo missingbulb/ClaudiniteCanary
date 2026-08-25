@@ -39,11 +39,11 @@
     },
     {
       "id": "claudinite-canary-repo",
-      "version": "60824.1"
+      "version": "60824.2"
     },
     {
       "id": "claudinite-lifecycle",
-      "version": "60824.3"
+      "version": "60824.6"
     },
     {
       "id": "claudinite-dashboard",
@@ -57,7 +57,7 @@
     },
     {
       "id": "claudinite-tasks",
-      "version": "60824.5"
+      "version": "60824.9"
     }
   ],
   "taskScheduler": {
