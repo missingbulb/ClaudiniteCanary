@@ -1,7 +1,7 @@
-// canary world rule — the pack's own manifest still declares the two-scope-
-// dispatch-plus-skill-mounting shape RULES.md's "Keep the local pack loading"
-// bullet requires, not just that pack.mjs and RULES.md exist on disk (that
-// part is pack-intact.mjs's job, gated on the change touching this dir).
+// canary world rule — the pack's own manifest still declares a rule in each
+// scope and at least one bundled skill, not just that pack.mjs and RULES.md
+// exist on disk (that part is pack-intact.mjs's job, gated on the change
+// touching this dir).
 //
 // A LIVENESS PROBE, not an opinion — an emptied `worldRules`/`workRules`/
 // `skills` array is not a config error the pack loader would catch (the
