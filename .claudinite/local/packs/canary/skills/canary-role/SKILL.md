@@ -23,7 +23,7 @@ rehearsal tests a shape no consumer has. Disposable, or nobody will let the rehe
 
 Anything that makes this a member is load-bearing:
 
-- the vendored mount at `.claudinite/shared/` and the `.claudinite-checks.json` declaration
+- the vendored mount at `.claudinite/shared/` and the `.claudinite-settings.json` declaration
   that names what is vendored;
 - the `.claude/settings.json` hook registrations;
 - the vendored scheduler workflow, with the repo-hashed cron minute;
@@ -49,6 +49,6 @@ touching anything here, separate the two:
 
 Re-baselining to canon `main` is always the correct repair, and there is no local state here worth
 preserving. One caveat, from vendoring's anti-rewind guard (#328): the stamped `ref` in
-`.claudinite-checks.json` must be an **ancestor of canon `main`**. Stamp a feature-branch sha and
+`.claudinite-settings.json` must be an **ancestor of canon `main`**. Stamp a feature-branch sha and
 the repo lands `ref-not-on-trunk`, which convergence then refuses to rewind past — wedging the
 repo permanently. Rehearsals may stamp a candidate ref by design; a human repair should not.
