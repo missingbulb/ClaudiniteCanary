@@ -1,0 +1,16 @@
+[
+  {
+    "id": "canary/pack-declared",
+    "severity": "blocking",
+    "since": "2026-08-30",
+    "failureMessage": "the pack loader only dispatches world- and work-scope rules, and mounts skills, for a pack the declaration names — an undeclared local/canary silently stops every rule in this pack from running",
+    "checkParsedFiles": [
+      {
+        "file": ".claudinite-settings.json",
+        "requireValueInArray": { "atField": "packs", "value": "local/canary", "matchingEntryObjectsByField": "id" },
+        "what": "does not declare \"local/canary\" in \"packs\"",
+        "fix": "add \"local/canary\" to the \"packs\" list in .claudinite-settings.json"
+      }
+    ]
+  }
+]
