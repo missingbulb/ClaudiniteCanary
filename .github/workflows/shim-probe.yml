@@ -1,0 +1,19 @@
+# Scratch shim for the shim-inversion probe (missingbulb/Claudinite#1547): one
+# permanent-shaped member workflow file whose whole body is a cross-repo call into
+# the canon at a branch ref. Removed once the probe has reported its verdict.
+name: shim-probe
+on:
+  workflow_dispatch:
+    inputs:
+      args:
+        description: opaque args forwarded verbatim to the canon-side callee
+        required: false
+        default: '{"hello":"from-dispatch"}'
+        type: string
+permissions:
+  contents: read
+jobs:
+  call:
+    uses: missingbulb/Claudinite/.github/workflows/shim-probe-callee.yml@claude/update-flow-architecture-5n1uyr
+    with:
+      args: ${{ inputs.args }}
