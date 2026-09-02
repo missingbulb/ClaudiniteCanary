@@ -28,8 +28,7 @@ Anything that makes this a member is load-bearing:
 - the `.claude/settings.json` hook registrations;
 - the vendored scheduler workflow, with the repo-hashed cron minute;
 - the unfiltered conformance workflow;
-- **the `local/canary` pack** — the highest-value shape here. Canon #555 broke the fleet through
-  exactly this surface: a local pack's manifest, its rules in both scopes, its bundled skills.
+- **the `local/canary` pack** — the highest-value shape here. (1)
 
 ## Reading a red rehearsal
 
@@ -48,7 +47,7 @@ touching anything here, separate the two:
 ## Repairing the canary
 
 Re-baselining to canon `main` is always the correct repair, and there is no local state here worth
-preserving. One caveat, from vendoring's anti-rewind guard (#328): the stamped `ref` in
+preserving. One caveat, from vendoring's anti-rewind guard: the stamped `ref` in
 `.claudinite-checks.json` must be an **ancestor of canon `main`**. Stamp a feature-branch sha and
 the repo lands `ref-not-on-trunk`, which convergence then refuses to rewind past — wedging the
-repo permanently. Rehearsals may stamp a candidate ref by design; a human repair should not.
+repo permanently. Rehearsals may stamp a candidate ref by design; a human repair should not. (2)
