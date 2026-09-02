@@ -1,0 +1,7 @@
+name: probe-action
+description: Temporary probe - a composite action hosted under the mount path (missingbulb/Claudinite#1547)
+runs:
+  using: composite
+  steps:
+    - run: echo "COMPOSITE_MARKER=mount-path-v1 repo=$GITHUB_REPOSITORY ref=$GITHUB_REF"
+      shell: bash
