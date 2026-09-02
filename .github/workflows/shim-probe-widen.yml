@@ -1,0 +1,17 @@
+name: shim-probe-widen
+on:
+  workflow_dispatch:
+    inputs:
+      args:
+        description: opaque args forwarded verbatim to the canon-side callee
+        required: false
+        default: ''
+        type: string
+permissions:
+  contents: read
+  issues: write
+jobs:
+  call:
+    uses: missingbulb/Claudinite/.github/workflows/shim-probe-widen-callee.yml@claude/update-flow-architecture-5n1uyr
+    with:
+      args: ${{ inputs.args }}
