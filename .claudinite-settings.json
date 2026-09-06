@@ -2,22 +2,22 @@
   "packs": [
     {
       "id": "basics",
-      "version": "60904.3"
+      "version": "60906.3"
     },
     {
       "id": "git-github",
-      "version": "60903.1",
+      "version": "60906.1",
       "via": [
         "basics"
       ]
     },
     {
       "id": "claudinite-growth",
-      "version": "60904.4"
+      "version": "60906.3"
     },
     {
       "id": "tidy-repo",
-      "version": "60903.3"
+      "version": "60906.1"
     },
     "local/canary",
     {
@@ -36,11 +36,11 @@
     },
     {
       "id": "claudinite-lifecycle",
-      "version": "60904.1"
+      "version": "60906.3"
     },
     {
       "id": "claudinite-dashboard",
-      "version": "60902.15",
+      "version": "60906.2",
       "answers": {
         "mode": "repo — this deployment is Canary's own page; it covers no other repo"
       },
@@ -50,7 +50,7 @@
     },
     {
       "id": "claudinite-tasks",
-      "version": "60904.2"
+      "version": "60906.5"
     }
   ],
   "taskScheduler": {
