@@ -15,7 +15,7 @@
 
 import * as gh from './github.mjs';
 import {
-  buildRoster, describeItem, isWorkItem, parseDeclaration, taskDeclarationPaths, periodMs,
+  buildRoster, describeItem, isWorkItem, parseDeclaration, taskDeclarationPaths,
   PARKED,
 } from './model.mjs';
 import {
@@ -40,6 +40,9 @@ import { renderBoard, quietLine } from './board-view.mjs';
 import { buildPanel } from './explore.mjs';
 import { wakeStrip } from './model.mjs';
 import { settingsTextAtSha, SETTINGS_FILE } from './settings-read.mjs';
+// The scheduler's own predicate, over the declaration this view already parsed — so the
+// page's idea of dormant and the member's own can never differ.
+import { isDormant } from '../claudinite-tasks/shared-code/dormancy.mjs';
 
 // How far each past-data panel looks back. The month is the growth panel's, because a
 // fortnight of a corpus's own numbers is noise; the fortnight is the queue's, because
@@ -90,7 +93,7 @@ function nextAskCell(r, repo, now) {
     case 'held':
       return el('td', {}, [
         el('div', { className: 'warn critical', textContent: 'schedule held' }),
-        sub('no next run until the park is cleared or re-queued'),
+        sub('this task declares it does not run past its own failure — no next run until the park clears'),
       ]);
     case 'deps':
       return el('td', {}, [el('div', {}, refNodes(repo, `after ${ask.on.map((n) => `#${n}`).join(', ')}`))]);
@@ -167,6 +170,16 @@ function rowCells(r, view, repo, now) {
     ]),
   ];
 }
+
+// The header list per view, beside the `rowCells` that fills it: the two are one table
+// and a change to either has to be a change to both. Nothing enforces the pairing, and
+// what happens when they part is what put this comment here — the list was deleted with
+// both of its uses left standing, so every view but the board threw on paint.
+const COLUMNS = {
+  stuck: ['Task', 'What is wrong', 'Item', 'Stuck for', 'Waiting on'],
+  pending: ['Task', 'State', 'Item', 'Next ask', 'Idle'],
+  all: ['Task', 'Cadence', 'Now', 'Next ask', 'Last outcome', 'Outcomes seen'],
+};
 
 const EMPTY = {
   stuck: 'Nothing is stuck — every task is either moving or waiting for its turn.',
@@ -340,31 +353,49 @@ function perTaskTable(ledger) {
 // classification drawn in time, so the views cannot disagree about what is stuck.
 function renderWorkBoard(board, { repo, items, prs, rows, now, comments = new Map() }) {
   const node = $('work-board');
-  const explore = $('work-explore');
 
-  const open = (row) => {
-    const number = Number(String(row.gutter).match(/#(\d+)/)?.[1] ?? NaN);
+  // What a mark is worth knowing before it is clicked — `buildPanel`'s answer, which
+  // already differs by what the mark is: a scheduled task reads its last occurrences
+  // and its next anchor, a park reads the ask it is waiting on, a failed task reads
+  // what broke. The panels were written for the block that used to sit under the
+  // board; the reading is the same, it just arrives without a click now.
+  const tipFor = (subject) => {
+    const number = subject?.cell
+      ? (subject.cell.number ?? subject.cell.numbers?.[0] ?? NaN)
+      : Number(String(subject?.gutter).match(/#(\d+)/)?.[1] ?? NaN);
     const item = items.find((i) => i.number === number) ?? null;
     const parsed = item ? rows.find((r) => r.current?.number === number) : null;
     const siblings = parsed ? items.filter((i) => (i.title ?? '').includes(parsed.key)) : [];
-    const panel = buildPanel(row, {
+    return [tipNode(buildPanel(subject, {
       item, repo, items, prs, rows,
-      declaration: parsed?.declaration ?? row.row?.declaration ?? null,
+      declaration: parsed?.declaration ?? subject.row?.declaration ?? null,
       siblings,
       comments: comments.get(number) ?? null,
-      cost: ledgerCostFor(row),
+      cost: ledgerCostFor(subject),
       now,
-    });
-    explore.replaceChildren(el('div', { className: 'explore one' }, [panelNode(panel, repo)]));
+    }), repo)];
   };
 
-  node.replaceChildren(renderBoard(board, { onSelect: open, repo }), quietLine(board.quiet, { repo }));
-  // One panel is open at rest — the board's own worst finding written out, because a
-  // board whose finding is one click away is a board nobody clicks.
-  const worst = board.groups.flatMap((g) => (g.grid ? [] : g.shown)).find((r) => r.broken || r.parkKind === 'failure')
-    ?? board.groups[0]?.shown?.[0] ?? null;
-  if (worst) open(worst);
-  else explore.replaceChildren();
+  const tip = el('div', { className: 'board-tip', role: 'tooltip', hidden: true });
+  node.replaceChildren(renderBoard(board, { repo, tip, tipFor }), tip, quietLine(board.quiet, { repo }));
+}
+
+// The panel as a hover card: its title and its fields, and the FIRST LINE of its `do`.
+// The rest of a `do` is a command to paste, and a card that vanishes when the pointer
+// leaves it is not somewhere anything can be copied from — so the imperative stays and
+// the block under it does not.
+function tipNode(panel, repo) {
+  // The colon goes with the block it introduced: "converge it:" with nothing under it
+  // reads as a card that failed to finish drawing.
+  const say = String(panel.do ?? '').split('\n')[0].replace(/:$/, '');
+  return el('div', { className: 'panel-x' }, [
+    el('h4', {}, [panel.title]),
+    el('dl', {}, panel.fields.flatMap((f) => [
+      el('dt', { textContent: f.label }),
+      el('dd', { className: f.value === null ? 'gap' : '' }, refNodes(repo, f.value ?? f.note)),
+    ])),
+    say ? el('div', { className: 'do' }, [el('b', { textContent: 'do' }), ...refNodes(repo, say)]) : null,
+  ]);
 }
 
 const ledgerCostFor = () => null;
@@ -382,31 +413,25 @@ export function ciCell(ci, now) {
   };
 }
 
-function panelNode(panel, repo) {
-  // A panel is mostly numbers — what closes this, what it unblocks, who moves it — and
-  // every one of them is the reader's next click. The imperative's own command block
-  // stays literal: it is text to paste, not to follow a link out of.
-  return el('div', { className: 'panel-x' }, [
-    el('h4', {}, [panel.title]),
-    el('dl', {}, panel.fields.flatMap((f) => [
-      el('dt', { textContent: f.label }),
-      el('dd', { className: f.value === null ? 'gap' : '' }, refNodes(repo, f.value ?? f.note)),
-    ])),
-    el('div', { className: 'do' }, [
-      el('b', { textContent: 'do' }),
-      ...(panel.do.includes('\n')
-        ? [...refNodes(repo, panel.do.split('\n')[0]), el('pre', { textContent: panel.do.split('\n').slice(1).join('\n') })]
-        : refNodes(repo, panel.do)),
-    ]),
-  ]);
-}
-
-export function renderWork(all, repo, now, view, board = null, context = null) {
+export function renderWork(all, repo, now, view, board = null, context = null, dormant = false) {
   const counts = viewCounts(all);
   const table = $('work');
+  // A DORMANT scheduler mints no item and picks none up, so every task row is a task
+  // that cannot run and every item one nothing will move. Drawn as usual, the block
+  // reads as a badly stuck repo — the single impression it exists to give accurately —
+  // and every remedy it offers is one the declaration has already refused. So the
+  // tasks elements come out and the block says what is actually true. Nothing else on
+  // the page changes: the mount, the ledger and the contributions are all still facts
+  // about a dormant repo.
+  $('work-dormant').hidden = !dormant;
+  $('work-views').hidden = dormant;
+  if (dormant) {
+    $('work-board').hidden = true;
+    $('work-table-wrap').hidden = true;
+    return;
+  }
   const boardView = view === 'board';
   $('work-board').hidden = !boardView;
-  $('work-explore').hidden = !boardView;
   $('work-table-wrap').hidden = boardView;
   if (boardView) {
     if (board) renderWorkBoard(board, context);
@@ -628,7 +653,7 @@ export async function loadRepo({ repo, token, config = null, onError }) {
   const declPaths = declaration ? taskDeclarationPaths(paths, declaration) : [];
   const tasks = await Promise.all(declPaths.map(async (t) => ({
     ...t,
-    declaration: parseDeclaration(await gh.getTextAtSha(repo, sha, t.path, token), t.path),
+    declaration: parseDeclaration(await gh.getTextAtSha(repo, sha, t.path, token)),
   })));
 
   const items = issuePage.issues.filter(isWorkItem);
@@ -637,10 +662,7 @@ export async function loadRepo({ repo, token, config = null, onError }) {
   const byNumber = new Map(issuePage.issues.map((i) => [i.number, i.state === 'open']));
   const isOpen = (n) => byNumber.get(n) ?? null;
   const rows = buildRoster({ tasks, items, now, schedule, isOpen });
-  const periodFor = (k) => {
-    const f = rows.find((r) => r.key === k)?.frequency;
-    return f && f !== 'manual' ? periodMs(f) : null;
-  };
+  const periodFor = (k) => rows.find((r) => r.key === k)?.periodMs ?? null;
   const open = items.filter((i) => i.state === 'open').map((i) => describeItem(i, now, { periodFor, isOpen }));
 
   // The canon reference for the drift tile. Optional in every direction: with none
@@ -692,7 +714,8 @@ export async function loadRepo({ repo, token, config = null, onError }) {
   const board = buildBoard({ rows, items: issuePage.issues, prs: issuePage.prs, now, schedule });
   const boardContext = { repo, items: issuePage.issues, prs: issuePage.prs, rows: all, now };
   const anythingLive = counts.stuck || counts.pending;
-  renderWork(all, repo, now, anythingLive ? 'board' : defaultView(counts), board, boardContext);
+  renderWork(all, repo, now, anythingLive ? 'board' : defaultView(counts), board, boardContext,
+    isDormant(declaration));
   renderContributions(contributions, now);
   // Today's closes come from the issue page already fetched — the fold's own read is
   // watermarked and hourly, so the last hour or two is exactly what it has not seen.

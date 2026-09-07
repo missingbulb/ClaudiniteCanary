@@ -42,14 +42,14 @@
 // `materialize` re-vendors the same path through the withhold lane.
 //
 // THE VERSIONS ARE THE SEQUENCE, not bookkeeping. An install stamps the newest version
-// and runs no records (`updates/install.mjs`), so a record shipped in the version a repo
+// and runs no records (the install runner), so a record shipped in the version a repo
 // adopts at is a record that repo can never reach: `migrationApplies` is `want > have`.
 // The probe is therefore adopted at version 1, which seeds the file and nothing else,
 // and the record lands at version 2 so the update flow really has a gap to close. It
 // also means the record's job is to UPDATE a workflow that is already there — the exact
 // shape a fleet-wide workflow fix would take.
 export default {
-  version: '60831.1',
+  version: '60906.1',
   minEngineVersion: '60822.1',
   ruleRoutingGuidance: {
     belongs: 'the inert probe workflow the canon delivers to its canary to prove workflow materialization works end to end',

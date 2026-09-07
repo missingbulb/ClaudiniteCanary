@@ -18,6 +18,7 @@ import { fleetCandidates } from './next-work.mjs';
 import {
   $, el, ago, duration, groupedHead, columnCount, groupStarts, emptyRow, leadCard, repoLink, tiles, segmentBar,
   reasonNodes, queueUrl, stackedColumns, chartLegend, windowFigure, ciMark, commitGraph, packMark,
+  attentionMark,
   LEVEL_GLYPH, STATE_ORDER, STATE_COLOR, STATE_UI, OUTCOME_COLOR,
 } from './ui.mjs';
 import { band, slip, machineCell, beats, wakeTicks, figureRow, pulseChart, detailTable, expander } from './sheet.mjs';
@@ -295,7 +296,9 @@ function memberRows(s, onOpen, now) {
 
   // The estimate, and immediately beside it what the estimate is made of. A number
   // with no breakdown is a number nobody can check; a breakdown with no total is a
-  // list nobody can prioritise between rows.
+  // list nobody can prioritise between rows. The breakdown is a mark rather than the
+  // sentences the tiles print — see `attentionMark`, and the width this column used to
+  // take from the other nine.
   const attention = memberAttention(s);
   const minutes = estimateMinutes(attention);
   const est = el('td', { className: 'num nw' }, [
@@ -303,11 +306,7 @@ function memberRows(s, onOpen, now) {
     el('div', { className: 'sub', textContent: minutes ? 'min' : '' }),
   ]);
 
-  const needs = attentionBreakdown(attention);
-  const what = el('td', {}, needs.length
-    ? [el('div', { className: 'needs' }, needs.map((r) =>
-      el('div', { className: `warn ${r.level}`, textContent: `${LEVEL_GLYPH[r.level]} ${r.text}` })))]
-    : [el('span', { className: 'sub', textContent: 'nothing waiting' })]);
+  const what = el('td', {}, [attentionMark(attentionBreakdown(attention))]);
 
   // --- Claudinite: what the machinery is doing here -------------------------------
 
@@ -732,6 +731,13 @@ export function renderSheet({ ledger, machine, candidates, sweeping, progress, s
   const m = machine;
   const machineBody = el('div', { className: 'machine' }, [
     machineCell({
+      level: m.updates.level, label: 'Updates',
+      value: m.updates.stale,
+      unit: m.updates.stale === null ? 'not judged' : `of ${m.updates.total} behind the canon`,
+      note: m.updates.note,
+      alarm: m.updates.fleetWide,
+    }),
+    machineCell({
       level: m.heartbeat.level, label: 'Scheduler',
       value: m.heartbeat.total ? m.heartbeat.onTime : null,
       unit: m.heartbeat.total ? `of ${m.heartbeat.total} ran on time` : 'no member read',
@@ -748,10 +754,6 @@ export function renderSheet({ ledger, machine, candidates, sweeping, progress, s
       level: m.foldAge.level, label: 'Fold age',
       value: m.foldAge.age === null ? null : fmtAge(m.foldAge.age),
       unit: 'oldest', note: m.foldAge.note,
-    }),
-    machineCell({
-      level: m.drift.level, label: 'Drift',
-      value: m.drift.behind, unit: 'behind', note: m.drift.note,
     }),
     machineCell({
       level: m.wake.level, label: 'Next wake',
@@ -835,7 +837,7 @@ export function renderSheet({ ledger, machine, candidates, sweeping, progress, s
 
   page.replaceChildren(
     band('Start here', 'worst thing needing a person', startBody, { aria: 'Start here' }),
-    band('The machine', 'is it running, right now, on every member', machineBody, { aria: 'The machine' }),
+    band('The machine', 'is the update landing, and is it running, on every member', machineBody, { aria: 'The machine' }),
     band('This week', `against last · ${ledger.window.from} – ${ledger.window.to} vs ${ledger.window.prevFrom} – ${ledger.window.prevTo} · ${ledger.window.folding} folding members`,
       weekBody, { aria: 'This week against last' }),
     band('Pulse', 'sessions / day, 14 days',
