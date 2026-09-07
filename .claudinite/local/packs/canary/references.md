@@ -16,3 +16,8 @@ end-of-line `(n)` marker in `RULES.md` cites `RULES-n`, one in a skill cites
   `ref` past a sha that isn't an ancestor of canon `main`; a human repair that stamps a
   feature-branch sha wedges the repo as `ref-not-on-trunk`. Retire only if convergence stops
   refusing a non-ancestor ref.
+- **(canary-role-3)** missingbulb/Claudinite#1547 pushed and removed two probe-workflow pairs
+  directly on `main` (17fbd91/4eaae4d/4b5f504, f27f1fc/3b9c643, d3c4d5d/a2b5888) to verify a
+  cross-repo reusable-workflow permission ceiling and a mount-hosted composite action against a
+  real member, outside the rehearsal mechanism. Retire only if canon investigations stop using
+  this repo for scratch, non-rehearsal probes.
