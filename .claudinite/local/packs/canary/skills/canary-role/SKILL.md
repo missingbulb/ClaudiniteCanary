@@ -30,6 +30,15 @@ Anything that makes this a member is load-bearing:
 - the unfiltered conformance workflow;
 - **the `local/canary` pack** — the highest-value shape here. (1)
 
+## Scratch probes are the other legitimate traffic here
+
+Not every push to this repo is a rehearsal convergence. A canon investigation that needs proof
+against a **real** GitHub Actions environment — a permission ceiling, a mount-hosted composite
+action — may push a temporary probe workflow straight to `main`, dispatch it, read the run, then
+remove it in a follow-up commit once the verdict is recorded. Seeing one appear and disappear over
+a short span is expected, not drift to "fix": don't re-baseline it away mid-flight, and if you're
+the one adding one, remove it once you've read the result rather than leaving it standing. (3)
+
 ## Reading a red rehearsal
 
 A rehearsal failure is a claim about the **candidate canon ref**, not about this repo. Before
