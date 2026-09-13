@@ -56,7 +56,7 @@ export function fleetDays(folding, { now, days = LADDER_DAYS } = {}) {
   const ladder = dayLadder(now, days);
   const SCALARS = [
     'sessions', 'userMessages', 'tokensIn', 'tokensOut', 'tokenSessions',
-    'humanSeconds', 'agentSeconds', 'ruleTokens', 'ruleTokenSessions',
+    'humanSeconds', 'agentSeconds',
     'commits', 'linesAdded', 'linesRemoved', 'releases',
   ];
   return ladder.map((day) => {
@@ -254,12 +254,6 @@ export function fleetLedger(reads, { now, rates = null, windowDays = WINDOW_DAYS
     const removed = sum(slice, 'linesRemoved');
     return added === null || removed === null ? null : added - removed;
   };
-  const perSession = (slice) => {
-    const tokens = sum(slice, 'ruleTokens');
-    const sessions = sum(slice, 'ruleTokenSessions');
-    return tokens === null || !sessions ? null : Math.round(tokens / sessions);
-  };
-
   const releasedBy = [...new Set(w.current.flatMap((r) => r.releasedBy))].sort();
   const daysWithNone = w.current.filter((r) => !merged.some((p) => p.day === r.day)).length;
   const peakDay = w.current
@@ -317,11 +311,6 @@ export function fleetLedger(reads, { now, rates = null, windowDays = WINDOW_DAYS
       spark: sparkOf(rows, 'humanSeconds'),
       bad: (cur('humanSeconds') ?? 0) > (prev('humanSeconds') ?? 0) && merged.length <= mergedPrev.length,
       gap: 'not recorded — this fold predates humanSeconds',
-    }),
-    figure(perSession(w.current), perSession(w.previous), {
-      unit: 'rule tokens / session',
-      sub: 'the corpus, before the first turn',
-      spark: null,
     }),
   ];
 
@@ -486,7 +475,13 @@ const STALE_RANK = { none: 0, unversioned: 1, 'behind-engine': 2, behind: 3 };
 // look up. Except when the fault is the fleet's: past `fleetWideBound` the line names
 // the count instead, because no single member is the thing to go and look at.
 export function machinePanel(summaries, reads, { now, canon = null, strip = null } = {}) {
-  const adopted = (summaries ?? []).filter((s) => s?.status === 'adopted');
+  // THE MACHINE IS THE AWAKE FLEET. A dormant member declared its scheduler stopped
+  // (owner, 2026-09-13), so it is out of every cell here: it has no heartbeat to be
+  // late, no mount anything will converge, and no anchor that will fire. Counting one
+  // in a denominator makes an obedient repo read as a missing member.
+  const all = (summaries ?? []).filter((s) => s?.status === 'adopted');
+  const adopted = all.filter((s) => !s.dormant);
+  const dormant = all.filter((s) => s.dormant).map((s) => s.repo);
 
   // HEARTBEAT — one square per member, in the grid's own order.
   const beats = adopted.map((s) => {
@@ -598,7 +593,9 @@ export function machinePanel(summaries, reads, { now, canon = null, strip = null
         : `${strip.hours.reduce((n, h) => n + h.tasks.length, 0)} wakes in 24 h`,
     };
 
-  return { updates, heartbeat, executor, foldAge, wake };
+  // Named rather than merely absent: the reader is told the panel is about the awake
+  // fleet, and which members it left alone.
+  return { updates, heartbeat, executor, foldAge, wake, dormant };
 }
 
 // The last N whole UTC hours, as the fold's own hour keys.
@@ -623,14 +620,11 @@ export function memberWindow(read, w) {
   const rows = w.current.map((d) => read.usage?.days?.[d.day]).filter(Boolean);
   const sum = (field) => sumKnown(rows.map((row) => row[field]));
   const scopes = rows.flatMap((row) => Object.values(row.checks ?? {}));
-  const tokens = sum('ruleTokens');
-  const sessions = sum('ruleTokenSessions');
   return {
     repo: read.repo,
     sessions: sum('sessions'),
     turns: sum('userMessages'),
     tokensIn: sum('tokensIn'),
     caught: scopes.length ? scopes.reduce((n, s) => n + (s.failures ?? 0) + (s.ciFailures ?? 0), 0) : null,
-    tokensPerSession: tokens === null || !sessions ? null : Math.round(tokens / sessions),
   };
 }

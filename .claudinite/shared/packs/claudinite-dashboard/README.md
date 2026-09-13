@@ -122,7 +122,7 @@ wanted it say so, and nothing else on the page is affected.
 | **Work** | One row per piece of work, in three views — **stuck** (what has stopped, and for how long), **pending** (what is moving, and what happens next), **all** (what each task is and what it has done). The page opens on the worst view that has anything in it |
 | **What the queue closed** | Per-day outcomes over a fortnight — today from the live issue page, the days before it from the fold |
 | **What ran** | 48 hours of scheduler runs, executor runs and agent sessions per hour; hovering an hour names the tasks that executed in it |
-| **What Claudinite is doing here** | 30 days of rule tokens against checks executed, on two stated scales — plus tokens spent, lines committed and releases where the fold carries them |
+| **What Claudinite is doing here** | 30 days of checks executed against the runs that caught something, on two stated scales — plus tokens spent, lines committed and releases where the fold carries them |
 | **What the packs report** | One card per declared pack that contributes — see [below](#what-a-pack-contributes). Last, because it is the only region whose contents differ from repo to repo |
 
 ### One table, not two
@@ -174,7 +174,7 @@ second. So nothing on it is a total for its own sake.
 | **What the corpus is doing across the fleet** | The detail behind the block above, from each member's usage fold: workload this week against last, the two check scopes side by side, which rules actually fire, which skills load and which are mounted everywhere and never do, and one row per member. A member that does not fold is named and counted in nothing |
 | **Fleet activity** | What the fleet *did* per day — work closed by outcome, runs and their pass rate, **how often the checks ran and caught something**, and which members moved at all |
 | **Rollup tiles** | How many *members* need a human — not how many items exist |
-| **Members** | Every member ranked worst-first, in three column groups asked in the order a reader asks them: **Activity** (90 days of commits, as a weekly curve), **Waiting on a person** (an estimate in minutes, what it is made of, then issues and pull requests) and **Claudinite** (packs wearing the mount's verdict, queue, outcomes, scheduler). Stars and CI ride in the member cell — they are how you recognise a row, not findings about it |
+| **Members** | Every member ranked worst-first, in three column groups asked in the order a reader asks them: **Activity** (90 days of commits, as a weekly curve, with a second line for the commits that were genuine project work), **Waiting on a person** (an estimate in minutes, what it is made of, then issues and pull requests) and **Claudinite** (packs wearing the mount's verdict, queue, outcomes, scheduler). Stars and CI ride in the member cell — they are how you recognise a row, not findings about it, and so do the state tags below |
 | **Tasks across the fleet** | One task, everywhere it runs — a shared pack's task parked in four members at once is a canon problem no single repo's page reveals |
 | **Pack adoption** | Which packs are in use and how widely — who a change to a pack would reach |
 | **What this deployment's packs report** | The fleet-scope cards, from the packs the deployment repo and the canon declare |
@@ -216,9 +216,68 @@ repo outside their access is not in their fleet, rather than being in it as a ro
 cannot open. No repo list is baked into any file, which is also why a fleet's numbers
 cannot leak from a shared artifact to someone without access to the repos behind them.
 
-Archived and forked repos leave the fleet by their own state; `exclude` covers the rest.
-An enumeration that could not be read is said out loud, never rendered as a fleet that
-happens to be empty.
+**Every repo the viewer can see is on the page**, and only a fork is not — that is
+someone else's project, and its work is upstream's. An enumeration that could not be read
+is said out loud, never rendered as a fleet that happens to be empty.
+
+Out of the fleet is a **state**, not a filter: an archived repo, and one on the
+deployment's `exclude` list, are drawn greyed with their core GitHub facts and nothing
+else, and counted in no figure above the grid. They are on the page because a repo the
+reader cannot find at all is indistinguishable from one that is gone — and because each
+carries the one action that brings it back.
+
+### What KIND of member a row is — private, dormant, sleepy
+
+Three tags sit beside a member's name, and they are deliberately unalike:
+
+- **private** — GitHub's own flag, carried through untouched. Who can see a member is part
+  of recognising it.
+- **dormant** — the member's own declaration (`dormant` on its `claudinite-tasks` entry).
+  Its scheduler is stopped, so the page measures **neither its mount nor its scheduler**
+  and no fleet-wide operation runs against it; the row says `dormant` where those two
+  verdicts would have sat, and the machine band's cells leave it out of their denominators
+  and name how many they left out. It is still a member: dormancy is about upkeep.
+- **sleepy** — nothing **meaningful** landed in the last 14 days. The test is the
+  claudinite-tasks pack's own `isSubstantiveCommit` over one page of the commit listing, so
+  a member reads quiet here exactly when its own preconditions read it quiet. It is **not**
+  dormancy: nobody declared it, it can change back tomorrow, and every fleet-wide operation
+  still reaches the repo. Drawn dashed for that reason.
+
+A member whose commit listing was not read (budget) is **unknown**, never sleepy: a repo
+nobody looked at and a repo nobody worked on are not the same fact. The one exclusion the
+cheap test cannot apply — a commit that touched only `.claudinite/` — is named on the tag's
+hover ([data-sources.md](docs/data-sources.md)).
+
+The chips above the grid filter it by those three states. "Which of my repos has nobody
+touched in a fortnight" is a morning question, and scanning a dozen rows for a dashed tag
+is not how it gets answered.
+
+### Three bands, and one thing to do per row
+
+The grid is the **fleet proper** ranked worst-first, then **Dormant** and **Out of the
+fleet**, each a collapsed band carrying its own count. Collapsed because those members are
+not being maintained and should not sit between the reader and the fleet; present because
+a page that hides them answers "where do I need to look" by pretending part of the account
+does not exist. Any filter opens the bands — a question about a state wants the rows, not
+a count.
+
+Every row ends in a **Next** cell, and what it offers follows the member's state, each a
+different kind of act:
+
+| Row | Next |
+|---|---|
+| archived | **Unarchive →**, GitHub's own settings page. Claudinite cannot undo an archive, and a button that pretended otherwise would send the reader somewhere that cannot work |
+| ignored | **Bring back — copy request**: the whole request to paste into a session, naming the repo and the `config.exclude` key. The enforcer's declaration is a file a person edits; this page reads it and must not write it |
+| dormant | **Wake — copy request**, the same shape against the member's own `claudinite-tasks` entry |
+| awake, something parked | **Advance #n →**, the member's own worst item, with the reason on the link |
+| awake, nothing parked | its open pull requests, else its open issues |
+| awake, nothing open | 🙂 — the one cell on this page that asks for nothing |
+
+A dormant row keeps its Claudinite columns and loses the **task-based delays**: no minutes
+estimate, no attention breakdown, and its queue as a plain count rather than a state mix.
+How many items are open there is an ordinary fact about the repo; which of them are
+blocked, ready or parked is the state of a queue that stopped, and colouring a row for
+delays the declaration asked for is exactly the nagging dormancy exists to prevent.
 
 ### What only the members' own files can say
 
@@ -289,8 +348,8 @@ closed with nobody in the loop, how many did need a person — this week against
 Two rules keep that block honest, and they are why some obvious figures are missing
 from it. **No vanity total**: every figure is bounded by a window, because a number
 that only grows says nothing about today. **Nothing invented**: no estimated hours
-saved, no score. Checks enforced and rule tokens are not there because no read this
-page makes can count them, and a plausible guess in a tile is worse than a gap.
+saved, no score. Checks enforced are not there because no read this page makes can
+count them, and a plausible guess in a tile is worse than a gap.
 
 Every figure in both panels comes from reads the page already makes — the issue page,
 the runs list, and the head commit whose date arrives with the sha the cache is keyed
@@ -366,14 +425,29 @@ withheld before anything the queue depends on.
 **The viewer, and only the viewer.** There is no backend, no shared credential and
 no service account: the page calls `api.github.com` from the browser as whoever is
 using it, so it can show nobody anything their own GitHub account cannot already
-read. The credential lives in `sessionStorage` and dies with the tab.
+read.
 
-Two ways to get one:
+**The page is gated on a credential**, on a screen of its own that is all a viewer sees
+until they have one. There is no anonymous view to fall back to: every request is made
+as the viewer, so without a credential there is nothing to show and — at 60 requests an
+hour per IP — no budget worth showing it with. A `?repo=owner/name` deep link survives
+the gate; signing in lands on the view it named.
+
+Two ways to get one, offered on that screen:
 
 - **Sign in with GitHub** — a button, no typing. Available when the deployment
   configures `clientId` and `exchangeUrl`.
-- **A pasted token** — the fallback, and the local-development path. Needs
-  read-only **Contents**, **Issues** and **Actions**.
+- **A pasted token** — the fallback, and the local-development path, offered only when
+  sign-in is not configured. Needs read-only **Contents**, **Issues** and **Actions**.
+
+The credential dies with the tab unless the viewer ticks **Remember me**, which keeps it
+in this browser (`localStorage`) until they sign out. Signing out drops the cached data
+with it; clearing the cache does not sign you out.
+
+Everything that belongs to the viewer rather than to the view — who they are, the rate
+budget, **Reload**, **Clear cache**, **Sign out** and the note on how this page reads a
+repo — sits behind the avatar in the topbar, so the fleet and repo screens carry no
+account chrome at all.
 
 ### What each credential is worth
 
