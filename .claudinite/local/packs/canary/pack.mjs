@@ -6,7 +6,7 @@ import packShape from './pack-shape.mjs';
 // The `canary` pack: this repo's own LOCAL Claudinite pack
 // (.claudinite/local/packs/ — tracked project content, discovered and run by the
 // same engine as the canon packs, declared by hand as `local/canary` in
-// .claudinite-checks.json).
+// .claudinite-settings.json).
 //
 // WHY IT EXISTS. ClaudiniteCanary is the live canary for the canon's
 // consumer-safety gate: canon CI cannot prove a canon change is safe for

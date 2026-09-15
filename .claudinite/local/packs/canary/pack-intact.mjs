@@ -37,9 +37,9 @@ export default {
       severity,
       file,
       line: null,
-      what: `${file} is gone, but .claudinite-checks.json still declares local/canary`,
+      what: `${file} is gone, but .claudinite-settings.json still declares local/canary`,
       why,
-      fix: `restore ${file}, or drop "local/canary" from the "packs" list in .claudinite-checks.json`,
+      fix: `restore ${file}, or drop "local/canary" from the "packs" list in .claudinite-settings.json`,
       doc,
     }));
   },
