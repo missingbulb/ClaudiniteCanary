@@ -15,8 +15,8 @@ therefore carries the full member shape and nothing else — no product code:
 | Piece | Why it is here |
 | --- | --- |
 | the vendored mount | the canon snapshot this repo runs from, stamped in the declaration |
-| `.claudinite-checks.json` | the pack declaration, the stamp, and the scheduler settings |
-| `.claude/settings.json` | the SessionStart / Stop / PreToolUse / SessionEnd hook wiring |
+| `.claudinite-settings.json` | the pack declaration, the stamp, and the scheduler settings |
+| `.claude/settings.json` | the SessionStart / Stop / PreToolUse / PostToolUse / UserPromptSubmit / SessionEnd hook wiring |
 | `.github/workflows/claudinite-scheduler.yml` | the repo's only cron, on its repo-hashed minute |
 | `.github/workflows/claudinite-conformance.yml` | the unfiltered world sweep every PR is gated on |
 | the `canary` local pack | the shape that broke the fleet in canon #555 |
