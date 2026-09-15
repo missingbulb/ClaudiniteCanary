@@ -13,7 +13,7 @@
     },
     {
       "id": "claudinite-growth",
-      "version": "60913.5"
+      "version": "60914.1"
     },
     "local/canary",
     {
@@ -32,11 +32,11 @@
     },
     {
       "id": "claudinite-lifecycle",
-      "version": "60913.4"
+      "version": "60914.1"
     },
     {
       "id": "claudinite-dashboard",
-      "version": "60913.5",
+      "version": "60914.1",
       "answers": {
         "mode": "repo — this deployment is Canary's own page; it covers no other repo"
       },
@@ -46,7 +46,7 @@
     },
     {
       "id": "claudinite-tasks",
-      "version": "60913.6"
+      "version": "60915.1"
     }
   ],
   "taskScheduler": {
