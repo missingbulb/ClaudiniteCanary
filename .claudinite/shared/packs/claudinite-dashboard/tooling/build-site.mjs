@@ -24,7 +24,7 @@ import { deploymentConfig } from './deployment-config.mjs';
 const HERE = dirname(fileURLToPath(import.meta.url));
 
 // The page imports the queue's own modules by relative path — the tasks pack's published
-// `shared-code/`, and the engine surface beneath it — precisely so it cannot drift from
+// `public/`, and the engine surface beneath it — precisely so it cannot drift from
 // them. The published tree therefore has to preserve that shape: flattening the dashboard
 // to the site root sends those imports above the root and the page does not boot. So every
 // directory it reaches is staged at the depth it already has, and the site root is a redirect.
@@ -201,10 +201,10 @@ await writeFile(join(OUT, HOME, 'dashboard.config.json'), `${JSON.stringify(conf
 
 // Say which mode the site actually built in. Sign-in quietly not being configured, or a
 // fleet roster quietly not arriving, are exactly the things nobody notices until they
-// wonder why the page is asking for a token or showing one repo.
+// wonder why the page will not let them in or is showing one repo.
 const signIn = config.clientId && config.exchangeUrl
   ? 'configured'
-  : `NOT configured — the site will ask for a token${config.clientId ? ' (exchangeUrl missing)' : ''}${config.exchangeUrl ? ' (clientId missing)' : ''}`;
+  : `NOT configured — NOBODY CAN READ THE SITE${config.clientId ? ' (exchangeUrl missing)' : ''}${config.exchangeUrl ? ' (clientId missing)' : ''}`;
 const covers = repos.length ? `${repos.length} named members`
   : cfg.owner ? `every repo under ${cfg.owner} the viewer can read${config.exclude.length ? `, less ${config.exclude.length} excluded` : ''}`
     : rosterUrl ? `whatever ${rosterUrl} names`
