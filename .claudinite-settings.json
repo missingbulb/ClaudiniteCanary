@@ -36,7 +36,7 @@
     },
     {
       "id": "claudinite-dashboard",
-      "version": "60915.5",
+      "version": "60915.7",
       "answers": {
         "mode": "repo — this deployment is Canary's own page; it covers no other repo"
       },
@@ -46,7 +46,7 @@
     },
     {
       "id": "claudinite-tasks",
-      "version": "60915.10"
+      "version": "60915.11"
     }
   ],
   "taskScheduler": {
