@@ -1,6 +1,8 @@
 ---
 name: canary-role
 description: What ClaudiniteCanary is for and how to work in it — the live canary for Claudinite's consumer-safety gate. Use before changing anything in this repo, and when a canary rehearsal comes back red and you have to decide what the red means.
+metadata:
+  body: workflow
 ---
 
 # Working in the canary
@@ -28,7 +30,7 @@ Anything that makes this a member is load-bearing:
 - the `.claude/settings.json` hook registrations;
 - the vendored scheduler workflow, with the repo-hashed cron minute;
 - the unfiltered conformance workflow;
-- **the `local/canary` pack** — the highest-value shape here. (1)
+- **the `local/canary` pack** — the highest-value shape here.
 
 ## Scratch probes are the other legitimate traffic here
 
