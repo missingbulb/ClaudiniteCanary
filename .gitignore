@@ -1,2 +1,4 @@
 /.claudinite-hooks.log
 /.claudinite-hooks.log.tmp
+# Rewritten each session from the store repo; a person's rules are theirs, not this repo's.
+/.claudinite/temp/
