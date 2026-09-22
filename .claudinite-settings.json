@@ -2,23 +2,23 @@
   "packs": [
     {
       "id": "basics",
-      "version": "60920.3"
+      "version": "60922.3"
     },
     {
       "id": "git-github",
-      "version": "60921.1",
+      "version": "60922.5",
       "via": [
         "basics"
       ]
     },
     {
       "id": "claudinite-growth",
-      "version": "60921.3"
+      "version": "60922.4"
     },
     "local/canary",
     {
       "id": "claude-code-web-users-support",
-      "version": "60921.1",
+      "version": "60921.2",
       "answers": {
         "store": "missingbulb/Shepherd"
       },
@@ -28,15 +28,15 @@
     },
     {
       "id": "claudinite-canary-repo",
-      "version": "60920.1"
+      "version": "60922.1"
     },
     {
       "id": "claudinite-lifecycle",
-      "version": "60921.2"
+      "version": "60922.5"
     },
     {
       "id": "claudinite-dashboard",
-      "version": "60920.5",
+      "version": "60921.2",
       "answers": {
         "mode": "repo — this deployment is Canary's own page; it covers no other repo"
       },
@@ -46,7 +46,7 @@
     },
     {
       "id": "claudinite-tasks",
-      "version": "60920.4"
+      "version": "60922.4"
     }
   ],
   "taskScheduler": {
