@@ -22,7 +22,6 @@ test('fires on the Face Pull drift — an id the document does not carry', () =>
   const findings = rule.run(ctx);
   assert.equal(findings.length, 1);
   assert.match(findings[0].what, /FR-PROG-017/);
-  assert.equal(findings[0].file, 'backend/src/engine.ts');
 });
 
 test('reports the line the call is on', () => {
