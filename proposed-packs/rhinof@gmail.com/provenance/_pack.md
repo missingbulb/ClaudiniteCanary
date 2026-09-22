@@ -6,3 +6,11 @@
   project's conventions.
 - **Mechanism:** the pack that travels with the person, whose directory is their exact identity -
   the reader copies that name and nothing else.
+
+## 2026-09-22 · scope-changed · the pack belongs to rhinof@gmail.com
+- **Reason:** the personal half was extracted under the wrong identity; the rules are unchanged, the
+  person they travel with is not.
+- **Actor:** @missingbulb (owner), who asked for the rename.
+- **Mechanism:** the directory name, which is the whole of a personal pack's identity - the reader
+  copies `<path>/<email>/` and nothing else, so a pack under any other name is silently never
+  copied.

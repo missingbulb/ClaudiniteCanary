@@ -1,4 +1,4 @@
-# arielra@gmail.com - how this person wants to be worked with
+# rhinof@gmail.com - how this person wants to be worked with
 
 - **Reaching the point where a change would ship with no test covering it** - any functional or
   non-functional behaviour, UI-only and formatting changes included - name the gap and get an

@@ -10,7 +10,7 @@ that have nothing to do with the ref under test.
 | Path | Lands in | What it is |
 | --- | --- | --- |
 | [`gymsafe/`](gymsafe/) | the GymSafe repo, at `.claudinite/local/packs/gymsafe/` | that project's own conventions |
-| [`arielra@gmail.com/`](arielra@gmail.com/) | `missingbulb/Shepherd`, at that store's `<path>/arielra@gmail.com/` | how this person wants to be worked with, in every project |
+| [`rhinof@gmail.com/`](rhinof@gmail.com/) | `missingbulb/Shepherd`, at that store's `<path>/rhinof@gmail.com/` | how this person wants to be worked with, in every project |
 | [`gymsafe-CLAUDE.trimmed.md`](gymsafe-CLAUDE.trimmed.md) | the GymSafe repo, as `CLAUDE.md` | the routing map the source file becomes once the packs carry its rules |
 
 The personal pack's directory name is its owner's exact identity, case included, because the

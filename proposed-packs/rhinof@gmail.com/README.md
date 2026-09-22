@@ -1,4 +1,4 @@
-# arielra@gmail.com
+# rhinof@gmail.com
 
 The rules that travel with this person, not with a project. Copied into every session they open
 on a project declaring the store this pack lives in, so it holds nothing a project owns.

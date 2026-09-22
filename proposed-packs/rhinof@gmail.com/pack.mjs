@@ -1,4 +1,4 @@
-// arielra@gmail.com's own pack - the rules that travel with the person rather
+// rhinof@gmail.com's own pack - the rules that travel with the person rather
 // than with any project, copied into every session they open on a project
 // declaring the store this pack lives in.
 //
