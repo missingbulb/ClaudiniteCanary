@@ -4,8 +4,8 @@
 // and from pack version 2 on a record re-vendors the same path through the update flow's
 // withhold lane. Opt-in, hidden and unfingerprinted; the canary is the only intended holder.
 export default {
-  version: '60922.1',
-  minEngineVersion: '60822.1',
+  version: '60925.1',
+  minEngineVersion: '60925.1',
   ruleRoutingGuidance: {
     belongs: 'the inert probe workflow the canon delivers to its canary to prove workflow materialization works end to end',
     excludes: 'real CI and release workflows — git-github owns workflow practice, each release pack owns its own pipeline',
