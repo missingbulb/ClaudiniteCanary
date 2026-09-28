@@ -1,11 +1,29 @@
 {
   "usage-findings": {
-    "value": 5,
+    "value": 8,
     "previous": 5,
-    "note": "2026-08-28 to 2026-09-24"
+    "note": "2026-08-31 to 2026-09-27"
   },
   "usage-newest": {
     "rows": [
+      {
+        "subject": "changing-pack-elements",
+        "rule": "skill-triggered-missing-moments",
+        "cause": "known",
+        "since": "2026-09-28"
+      },
+      {
+        "subject": "merge-to-main",
+        "rule": "skill-triggered-missing-moments",
+        "cause": "known",
+        "since": "2026-09-28"
+      },
+      {
+        "subject": "writing-pack-prose",
+        "rule": "skill-triggered-missing-moments",
+        "cause": "known",
+        "since": "2026-09-28"
+      },
       {
         "subject": "committing",
         "rule": "skill-forced-only-small",
