@@ -4,9 +4,8 @@ import realismArtifacts from './realism-artifacts.mjs';
 import packShape from './pack-shape.mjs';
 
 // The `canary` pack: this repo's own LOCAL Claudinite pack, declared by hand as
-// `local/canary` in .claudinite-settings.json. Its rules only prove the pack
-// loaded - manifest parse, two-scope dispatch, skill mounting - so they stay
-// trivial and non-firing. Its skills live inside the pack (skills/<name>/SKILL.md).
+// `local/canary` in .claudinite-settings.json. Its skills live inside the pack
+// (skills/<name>/SKILL.md).
 export default {
   id: 'canary',
   ruleRoutingGuidance: {
