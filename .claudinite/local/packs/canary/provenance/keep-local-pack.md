@@ -32,3 +32,8 @@
 - **Actor:** the rule-revalidation run, merged by @missingbulb (owner).
 - **Model:** Claude Sonnet 5, per the commit trailer.
 - **Landed:** #361 (Refs #354).
+
+## 2026-09-29 · reworded · pack.json and a check in each scope folder
+- **Reason:** the manifest became data and the checks moved into worldRules/ and workRules/.
+- **Actor:** @missingbulb (owner).
+- **Model:** claude-opus-5-5

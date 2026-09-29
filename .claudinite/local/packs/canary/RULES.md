@@ -13,8 +13,8 @@ answerable.
   `.claudinite/shared/`, the declaration, the hooks, the scheduler workflow, the conformance
   workflow, and this local pack. A stub proves nothing. (stay-realistic-member)
 - **Keep the local pack loading.** `local/canary` is declared in `.claudinite-settings.json`. It
-  must keep a valid `pack.mjs`, a rule in each scope, at least one bundled skill, and this file.
-  (keep-local-pack)
+  must keep a valid `pack.json`, a check in each of `worldRules/` and `workRules/`, at least one
+  bundled skill, and this file. (keep-local-pack)
 - **The canary's own rules stay trivial.** They prove the pack loaded; they do not enforce anything
   about this repo. A rule with real opinions would turn the canary red for reasons unrelated to the
   canon ref under test, which destroys the only signal this repo produces. (canarys-rules-stay)

@@ -5,7 +5,7 @@
 // directory. A session that never goes near it is never asked about it.
 //
 // Like its world-scope sibling this is a liveness probe with a real edge case
-// attached — deleting `pack.mjs` or `RULES.md` while keeping the `local/canary`
+// attached — deleting `pack.json` or `RULES.md` while keeping the `local/canary`
 // declaration turns every later session into a blocking `config` error at load,
 // which is the least debuggable way for this repo to break. In normal operation
 // it never fires; its job is to prove work-scope dispatch reached a local pack.
@@ -20,7 +20,7 @@ const why =
   'loader raises a blocking config error on every later session, in this repo and in every rehearsal of it';
 
 const DIR = '.claudinite/local/packs/canary/';
-const REQUIRED = [`${DIR}pack.mjs`, `${DIR}RULES.md`];
+const REQUIRED = [`${DIR}pack.json`, `${DIR}RULES.md`];
 
 export default {
   id,
