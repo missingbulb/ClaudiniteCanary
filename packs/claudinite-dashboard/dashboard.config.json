@@ -1,0 +1,13 @@
+{
+  "mode": "repo",
+  "clientId": null,
+  "exchangeUrl": null,
+  "redirectUri": null,
+  "canonRepo": null,
+  "owner": null,
+  "exclude": [],
+  "rosterUrl": null,
+  "repos": [],
+  "defaultRepo": "missingbulb/ClaudiniteCanary",
+  "rates": null
+}
