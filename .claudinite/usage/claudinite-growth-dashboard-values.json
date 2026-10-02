@@ -1,11 +1,17 @@
 {
   "usage-findings": {
-    "value": 7,
+    "value": 8,
     "previous": 7,
-    "note": "2026-09-03 to 2026-09-30"
+    "note": "2026-09-04 to 2026-10-01"
   },
   "usage-newest": {
     "rows": [
+      {
+        "subject": "searching-for-a-tool",
+        "rule": "skill-always-loaded",
+        "cause": "known",
+        "since": "2026-10-02"
+      },
       {
         "subject": "changing-pack-elements",
         "rule": "skill-triggered-missing-moments",
